@@ -15,7 +15,7 @@ _tt() {
     esac
 
     if [ "${COMP_CWORD}" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "default profile languages sl= tl= p= $flags" -- "$cur"))
+        COMPREPLY=($(compgen -W "default profile languages update sl= tl= p= $flags" -- "$cur"))
         return
     fi
 

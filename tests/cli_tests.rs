@@ -130,6 +130,16 @@ fn languages_rejects_extra_args() {
 }
 
 #[test]
+fn update_command() {
+    assert_eq!(parse(&args(&["update"])).unwrap(), Command::Update);
+}
+
+#[test]
+fn update_rejects_extra_args() {
+    assert!(parse(&args(&["update", "now"])).is_err());
+}
+
+#[test]
 fn default_no_args_shows() {
     assert_eq!(parse(&args(&["default"])).unwrap(), Command::DefaultShow);
 }

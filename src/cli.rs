@@ -22,6 +22,7 @@ pub enum Command {
     },
     ProfileList,
     Languages,
+    Update,
     ProfileDelete {
         name: String,
     },
@@ -47,6 +48,12 @@ pub fn parse(args: &[String]) -> Result<Command> {
                 return Err(Error::BadArgs("'languages' takes no arguments".to_string()));
             }
             Ok(Command::Languages)
+        }
+        Some("update") => {
+            if args.len() > 1 {
+                return Err(Error::BadArgs("'update' takes no arguments".to_string()));
+            }
+            Ok(Command::Update)
         }
         Some("default") => parse_default(&args[1..]),
         Some("profile") => parse_profile(&args[1..]),

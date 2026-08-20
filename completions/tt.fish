@@ -5,6 +5,7 @@ complete -c tt -f
 complete -c tt -n '__fish_use_subcommand' -a default -d 'get or set default languages'
 complete -c tt -n '__fish_use_subcommand' -a profile -d 'manage profiles'
 complete -c tt -n '__fish_use_subcommand' -a languages -d 'list supported language codes'
+complete -c tt -n '__fish_use_subcommand' -a update -d 'install the latest release'
 
 complete -c tt -n '__fish_seen_subcommand_from profile' -a 'add list ls delete rm patch'
 

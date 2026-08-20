@@ -42,6 +42,14 @@ just install      # same thing via cargo install
 cargo install --path .   # binary only; then ./install-completions.sh for completions
 ```
 
+## Updating
+
+```sh
+tt update
+```
+
+Fetches the latest release and installs it over the current binary, in place.
+
 ## Usage
 
 ```

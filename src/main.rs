@@ -30,6 +30,12 @@ fn run(args: &[String]) -> Result<i32> {
             print!("{}", languages(std::io::stdout().is_terminal()));
             Ok(0)
         }
+        Command::Update => {
+            println!("updating tt to the latest release");
+            tt::update::run()?;
+            println!("tt is up to date");
+            Ok(0)
+        }
         Command::Translate {
             profile,
             sl,
@@ -220,6 +226,10 @@ fn help(color: bool) -> String {
 
     o.push_str(&format!("{}\n", sec("LANGUAGES")));
     o.push_str(&row(color, "tt languages", "list supported language codes", 32));
+    o.push('\n');
+
+    o.push_str(&format!("{}\n", sec("UPDATE")));
+    o.push_str(&row(color, "tt update", "install the latest release", 32));
     o.push('\n');
 
     o.push_str(&format!("{}\n", sec("EXAMPLES")));

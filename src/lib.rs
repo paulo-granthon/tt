@@ -6,3 +6,4 @@ pub mod error;
 pub mod lang;
 pub mod profile;
 pub mod render;
+pub mod update;
