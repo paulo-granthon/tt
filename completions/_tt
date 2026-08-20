@@ -1,0 +1,40 @@
+#compdef tt
+
+_tt_langs=(auto en pt-BR pt-PT es fr de it ja ko zh-CN zh-TW ru ar nl sv pl tr hi el he cs da fi no uk vi th id ro hu)
+
+_tt() {
+    local -a flags
+    flags=(
+        '-q[print only the primary translation]'
+        '--quiet[print only the primary translation]'
+        '-s[print only the synonyms block]'
+        '--synonyms[print only the synonyms block]'
+        '-h[show help]'
+        '--help[show help]'
+    )
+
+    if (( CURRENT == 2 )); then
+        _values 'command or param' default profile languages 'sl=' 'tl=' 'p=' && return
+    fi
+
+    case "$words[2]" in
+        profile)
+            if (( CURRENT == 3 )); then
+                _values 'subcommand' add list ls delete rm patch && return
+            fi
+            _values 'field' 'sl=' 'tl=' 'name=' && return
+            ;;
+        default)
+            _values 'field' 'sl=' 'tl=' && return
+            ;;
+    esac
+
+    case "$PREFIX" in
+        sl=*) compadd -P 'sl=' -- $_tt_langs && return ;;
+        tl=*) compadd -P 'tl=' -- $_tt_langs && return ;;
+    esac
+
+    _arguments $flags '*:param:( sl= tl= p= )'
+}
+
+_tt "$@"
