@@ -151,12 +151,13 @@ fn parse_patch(tail: &[String]) -> Result<Command> {
 
 fn parse_translate(args: &[String]) -> Result<Command> {
     let (mut profile, mut sl, mut tl) = (None, None, None);
-    let (mut quiet, mut synonyms) = (false, false);
+    let (mut quiet, mut synonyms, mut verbose) = (false, false, false);
     let mut text_parts = Vec::new();
     for token in args {
         match token.as_str() {
             "--quiet" | "-q" => quiet = true,
             "--synonyms" | "-s" => synonyms = true,
+            "--verbose" | "-v" => verbose = true,
             _ => match split_kv(token) {
                 Some(("sl", v)) => sl = Some(v.to_string()),
                 Some(("tl", v)) => tl = Some(v.to_string()),
@@ -165,9 +166,9 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             },
         }
     }
-    if quiet && synonyms {
+    if u8::from(quiet) + u8::from(synonyms) + u8::from(verbose) > 1 {
         return Err(Error::BadArgs(
-            "--quiet and --synonyms are mutually exclusive".to_string(),
+            "--quiet, --synonyms and --verbose are mutually exclusive".to_string(),
         ));
     }
     let text = text_parts.join(" ");
@@ -183,6 +184,8 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             Filter::Quiet
         } else if synonyms {
             Filter::Synonyms
+        } else if verbose {
+            Filter::Verbose
         } else {
             Filter::Full
         },

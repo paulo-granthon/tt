@@ -88,8 +88,21 @@ fn synonyms_flag_sets_filter() {
 }
 
 #[test]
-fn quiet_and_synonyms_conflict() {
+fn verbose_flag_sets_filter() {
+    for flag in ["-v", "--verbose"] {
+        match parse(&args(&[flag, "hi"])).unwrap() {
+            Command::Translate { filter, .. } => assert_eq!(filter, Filter::Verbose),
+            other => panic!("got {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn output_filters_are_mutually_exclusive() {
     assert!(parse(&args(&["-q", "-s", "hi"])).is_err());
+    assert!(parse(&args(&["-q", "-v", "hi"])).is_err());
+    assert!(parse(&args(&["-s", "-v", "hi"])).is_err());
+    assert!(parse(&args(&["-q", "-s", "-v", "hi"])).is_err());
 }
 
 #[test]

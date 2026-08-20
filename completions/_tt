@@ -9,6 +9,8 @@ _tt() {
         '--quiet[print only the primary translation]'
         '-s[print only the synonyms block]'
         '--synonyms[print only the synonyms block]'
+        '-v[labeled verbose breakdown]'
+        '--verbose[labeled verbose breakdown]'
         '-h[show help]'
         '--help[show help]'
     )

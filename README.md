@@ -68,6 +68,7 @@ all mean Brazilian Portuguese. Use `auto` (the default source) to detect.
 | --- | --- |
 | `-q`, `--quiet` | print only the primary translation |
 | `-s`, `--synonyms` | print only the synonyms block |
+| `-v`, `--verbose` | a labeled breakdown: languages, original text, translation, synonyms |
 | `-h`, `--help` | show help |
 
 Output is colored when printed to a terminal and plain when piped, so

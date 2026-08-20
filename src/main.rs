@@ -7,7 +7,7 @@ use tt::config::Config;
 use tt::engine::{default_engine, Query};
 use tt::error::Result;
 use tt::lang::LANGUAGES;
-use tt::render::{render, Filter};
+use tt::render::{render, Filter, Meta};
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -46,8 +46,13 @@ fn run(args: &[String]) -> Result<i32> {
                 text: &text,
             })?;
             let color = std::io::stdout().is_terminal();
+            let meta = Meta {
+                sl: &resolved.sl,
+                tl: &resolved.tl,
+                text: &text,
+            };
             let mut out = std::io::stdout();
-            let _ = writeln!(out, "{}", render(&translation, filter, color));
+            let _ = writeln!(out, "{}", render(&translation, filter, color, &meta));
             if color && all_default && filter == Filter::Full {
                 eprintln!("{}", default_hint(&resolved.sl, &resolved.tl));
             }
@@ -186,6 +191,7 @@ fn help(color: bool) -> String {
     for (c, d) in [
         ("-q, --quiet", "only the primary translation"),
         ("-s, --synonyms", "only the synonyms and back translations"),
+        ("-v, --verbose", "a labeled breakdown: languages, original, result"),
         ("-h, --help", "show this help"),
     ] {
         o.push_str(&row(color, c, d, 32));

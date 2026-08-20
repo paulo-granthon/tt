@@ -34,6 +34,13 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("hu", "Hungarian"),
 ];
 
+pub fn name(code: &str) -> Option<&'static str> {
+    LANGUAGES
+        .iter()
+        .find(|(c, _)| *c == code)
+        .map(|(_, n)| *n)
+}
+
 pub fn normalize_key(input: &str) -> String {
     input
         .chars()
