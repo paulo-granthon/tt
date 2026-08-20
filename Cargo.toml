@@ -1,0 +1,28 @@
+[package]
+name = "tt"
+version = "0.1.0"
+edition = "2021"
+description = "Command-line text translator with synonyms and back translations"
+license = "MIT"
+readme = "README.md"
+
+[lib]
+name = "tt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tt"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+ureq = "2"
+directories = "5"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
