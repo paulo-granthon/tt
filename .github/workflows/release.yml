@@ -1,0 +1,79 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+
+  build:
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-linux
+            os: ubuntu-latest
+            rust_target: x86_64-unknown-linux-gnu
+          - target: aarch64-linux
+            os: ubuntu-24.04-arm
+            rust_target: aarch64-unknown-linux-gnu
+          - target: x86_64-macos
+            os: macos-13
+            rust_target: x86_64-apple-darwin
+          - target: aarch64-macos
+            os: macos-latest
+            rust_target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+      - run: cargo build --release --target ${{ matrix.rust_target }}
+      - name: package
+        env:
+          TARGET: ${{ matrix.target }}
+          RUST_TARGET: ${{ matrix.rust_target }}
+        run: |
+          staging="tt-$TARGET"
+          mkdir -p "$staging/completions"
+          cp "target/$RUST_TARGET/release/tt" "$staging/"
+          cp completions/tt.bash completions/_tt completions/tt.fish "$staging/completions/"
+          tar -czf "tt-$TARGET.tar.gz" -C "$staging" .
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: tt-${{ matrix.target }}.tar.gz
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: publish if version changed
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          if [ -z "${CARGO_REGISTRY_TOKEN:-}" ]; then
+            echo "no CARGO_REGISTRY_TOKEN, skipping crates.io publish"
+            exit 0
+          fi
+          version=$(cargo metadata --no-deps --format-version 1 | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
+          if cargo search tt | grep -q "^tt = \"$version\""; then
+            echo "version $version already on crates.io, skipping"
+          else
+            cargo publish
+          fi
