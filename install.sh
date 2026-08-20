@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-REPO="USER/tt"
+REPO="paulo-granthon/tt"
 BIN="tt"
 PREFIX="${PREFIX:-$HOME/.local}"
 BINDIR="$PREFIX/bin"

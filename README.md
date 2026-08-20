@@ -23,7 +23,7 @@ file so the common case is just `tt "some text"`.
 ### One-liner
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/USER/tt/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/paulo-granthon/tt/main/install.sh | sh
 ```
 
 `install.sh` is self-adjusting: run inside a clone (with `cargo` available) it
@@ -33,7 +33,7 @@ Either way it installs the binary and shell completions for bash, zsh, and fish.
 ### From source
 
 ```sh
-git clone https://github.com/USER/tt
+git clone https://github.com/paulo-granthon/tt
 cd tt
 ./install.sh      # builds and installs binary + completions
 # or:
