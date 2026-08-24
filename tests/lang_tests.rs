@@ -1,4 +1,4 @@
-use tt::lang::{canonical, normalize_key, resolve_source, resolve_target};
+use tt::lang::{canonical, is_identity, name, normalize_key, resolve_source, resolve_target};
 
 #[test]
 fn normalize_strips_separators_and_case() {
@@ -68,4 +68,24 @@ fn resolve_target_accepts_real_language() {
 #[test]
 fn resolve_target_rejects_unknown() {
     assert!(resolve_target("zzz").is_err());
+}
+
+#[test]
+fn identity_detects_same_explicit_language() {
+    assert!(is_identity("en", "en"));
+    assert!(is_identity("pt-BR", "pt-BR"));
+}
+
+#[test]
+fn identity_is_false_for_auto_or_different() {
+    assert!(!is_identity("auto", "en"));
+    assert!(!is_identity("en", "pt-BR"));
+    assert!(!is_identity("auto", "auto"));
+}
+
+#[test]
+fn name_maps_codes_to_display_names() {
+    assert_eq!(name("en"), Some("English"));
+    assert_eq!(name("pt-BR"), Some("Portuguese (Brazil)"));
+    assert_eq!(name("zz"), None);
 }

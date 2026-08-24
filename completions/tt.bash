@@ -11,11 +11,12 @@ _tt() {
     case "$cur" in
         sl=*) COMPREPLY=($(compgen -W "$langs" -P "sl=" -- "${cur#sl=}")); return ;;
         tl=*) COMPREPLY=($(compgen -W "$langs" -P "tl=" -- "${cur#tl=}")); return ;;
+        f=*)  COMPREPLY=($(compgen -f -P "f=" -- "${cur#f=}")); return ;;
         -*)   COMPREPLY=($(compgen -W "$flags" -- "$cur")); return ;;
     esac
 
     if [ "${COMP_CWORD}" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "default profile languages update sl= tl= p= $flags" -- "$cur"))
+        COMPREPLY=($(compgen -W "default profile languages update sl= tl= p= f= $flags" -- "$cur"))
         return
     fi
 
@@ -31,6 +32,6 @@ _tt() {
             COMPREPLY=($(compgen -W "sl= tl=" -- "$cur")); return ;;
     esac
 
-    COMPREPLY=($(compgen -W "sl= tl= p= $flags" -- "$cur"))
+    COMPREPLY=($(compgen -W "sl= tl= p= f= $flags" -- "$cur"))
 }
 complete -F _tt tt

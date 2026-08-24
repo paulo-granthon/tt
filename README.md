@@ -67,6 +67,17 @@ tt p=br "good morning"       # use the 'br' profile
 tt p=br sl=de "hallo"        # profile, with the source overridden inline
 ```
 
+### Input from a pipe or a file
+
+```sh
+echo "bom dia" | tt tl=en    # translate piped stdin
+tt tl=en -                   # a lone - also forces reading stdin
+tt tl=en f=notes.txt         # translate the contents of a file
+```
+
+When no text is given and stdin is piped, tt reads stdin. When source and target
+are the same explicit language, tt returns the input unchanged without a request.
+
 Languages accept aliases and any capitalization: `pt`, `br`, `ptbr`, `pt-BR`
 all mean Brazilian Portuguese. Use `auto` (the default source) to detect.
 

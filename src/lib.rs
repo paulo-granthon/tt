@@ -3,6 +3,7 @@ pub mod color;
 pub mod config;
 pub mod engine;
 pub mod error;
+pub mod input;
 pub mod lang;
 pub mod profile;
 pub mod render;

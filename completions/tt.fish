@@ -14,6 +14,10 @@ complete -c tt -s s -l synonyms -d 'print only the synonyms block'
 complete -c tt -s v -l verbose -d 'labeled verbose breakdown'
 complete -c tt -s h -l help -d 'show help'
 
+complete -c tt -a 'f=' -d 'translate a file'
+complete -c tt -n 'string match -q "f=*" -- (commandline -ct)' -f \
+    -a '(printf "f=%s\n" (__fish_complete_path (string replace -r "^f=" "" -- (commandline -ct))))'
+
 for lang in $tt_langs
     complete -c tt -a "sl=$lang" -d 'source language'
     complete -c tt -a "tl=$lang" -d 'target language'

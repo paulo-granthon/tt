@@ -26,7 +26,8 @@ fn bare_text_uses_default_profile() {
             profile: None,
             sl: None,
             tl: None,
-            text: "bom dia".to_string(),
+            text: Some("bom dia".to_string()),
+            file: None,
             filter: Filter::Full,
         }
     );
@@ -36,7 +37,7 @@ fn bare_text_uses_default_profile() {
 fn unquoted_words_join_into_text() {
     let cmd = parse(&args(&["bom", "dia"])).unwrap();
     match cmd {
-        Command::Translate { text, .. } => assert_eq!(text, "bom dia"),
+        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("bom dia")),
         other => panic!("expected translate, got {other:?}"),
     }
 }
@@ -57,7 +58,8 @@ fn parses_sl_tl_profile() {
             profile: Some("br".to_string()),
             sl: Some("de".to_string()),
             tl: Some("en".to_string()),
-            text: "hallo".to_string(),
+            text: Some("hallo".to_string()),
+            file: None,
             filter: Filter::Full,
         }
     );
@@ -106,14 +108,44 @@ fn output_filters_are_mutually_exclusive() {
 }
 
 #[test]
-fn empty_text_is_error() {
-    assert!(parse(&args(&["sl=pt", "tl=en"])).is_err());
+fn no_text_parses_with_none_for_stdin_resolution() {
+    match parse(&args(&["sl=pt", "tl=en"])).unwrap() {
+        Command::Translate { text, file, .. } => {
+            assert_eq!(text, None);
+            assert_eq!(file, None);
+        }
+        other => panic!("got {other:?}"),
+    }
 }
 
 #[test]
 fn text_with_equals_is_not_a_param() {
     match parse(&args(&["E=mc2"])).unwrap() {
-        Command::Translate { text, .. } => assert_eq!(text, "E=mc2"),
+        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("E=mc2")),
+        other => panic!("got {other:?}"),
+    }
+}
+
+#[test]
+fn file_param_sets_file() {
+    match parse(&args(&["tl=en", "f=notes.txt"])).unwrap() {
+        Command::Translate { file, text, .. } => {
+            assert_eq!(file.as_deref(), Some("notes.txt"));
+            assert_eq!(text, None);
+        }
+        other => panic!("got {other:?}"),
+    }
+}
+
+#[test]
+fn file_and_inline_text_conflict() {
+    assert!(parse(&args(&["f=notes.txt", "hello"])).is_err());
+}
+
+#[test]
+fn dash_text_is_preserved_for_stdin() {
+    match parse(&args(&["tl=en", "-"])).unwrap() {
+        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("-")),
         other => panic!("got {other:?}"),
     }
 }

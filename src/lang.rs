@@ -34,6 +34,10 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("hu", "Hungarian"),
 ];
 
+pub fn is_identity(sl: &str, tl: &str) -> bool {
+    sl != "auto" && sl == tl
+}
+
 pub fn name(code: &str) -> Option<&'static str> {
     LANGUAGES
         .iter()

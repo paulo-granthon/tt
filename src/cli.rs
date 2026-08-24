@@ -7,7 +7,8 @@ pub enum Command {
         profile: Option<String>,
         sl: Option<String>,
         tl: Option<String>,
-        text: String,
+        text: Option<String>,
+        file: Option<String>,
         filter: Filter,
     },
     DefaultShow,
@@ -157,7 +158,7 @@ fn parse_patch(tail: &[String]) -> Result<Command> {
 }
 
 fn parse_translate(args: &[String]) -> Result<Command> {
-    let (mut profile, mut sl, mut tl) = (None, None, None);
+    let (mut profile, mut sl, mut tl, mut file) = (None, None, None, None);
     let (mut quiet, mut synonyms, mut verbose) = (false, false, false);
     let mut text_parts = Vec::new();
     for token in args {
@@ -169,6 +170,7 @@ fn parse_translate(args: &[String]) -> Result<Command> {
                 Some(("sl", v)) => sl = Some(v.to_string()),
                 Some(("tl", v)) => tl = Some(v.to_string()),
                 Some(("p", v)) => profile = Some(v.to_string()),
+                Some(("f", v)) => file = Some(v.to_string()),
                 _ => text_parts.push(token.clone()),
             },
         }
@@ -178,15 +180,22 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             "--quiet, --synonyms and --verbose are mutually exclusive".to_string(),
         ));
     }
-    let text = text_parts.join(" ");
-    if text.trim().is_empty() {
-        return Err(Error::BadArgs("no text to translate".to_string()));
+    let text = if text_parts.is_empty() {
+        None
+    } else {
+        Some(text_parts.join(" "))
+    };
+    if file.is_some() && text.is_some() {
+        return Err(Error::BadArgs(
+            "cannot combine f= with inline text; use one".to_string(),
+        ));
     }
     Ok(Command::Translate {
         profile,
         sl,
         tl,
         text,
+        file,
         filter: if quiet {
             Filter::Quiet
         } else if synonyms {

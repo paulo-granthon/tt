@@ -1,12 +1,13 @@
-use std::io::{IsTerminal, Write};
+use std::io::{IsTerminal, Read, Write};
 use std::process::exit;
 
 use tt::cli::{parse, Command};
 use tt::color::{paint, BOLD, CYAN, DIM, GREEN, ITALIC, MAGENTA, YELLOW};
 use tt::config::Config;
-use tt::engine::{default_engine, Query};
-use tt::error::Result;
-use tt::lang::LANGUAGES;
+use tt::engine::{default_engine, Query, Translation};
+use tt::error::{Error, Result};
+use tt::input::{self, Source};
+use tt::lang::{self, LANGUAGES};
 use tt::render::{render, Filter, Meta};
 
 fn main() {
@@ -41,21 +42,32 @@ fn run(args: &[String]) -> Result<i32> {
             sl,
             tl,
             text,
+            file,
             filter,
         } => {
-            let all_default = profile.is_none() && sl.is_none() && tl.is_none();
+            let all_default =
+                profile.is_none() && sl.is_none() && tl.is_none() && text.is_some() && file.is_none();
             let config = Config::load()?;
             let resolved = config.resolve(profile.as_deref(), sl.as_deref(), tl.as_deref())?;
-            let translation = default_engine().translate(Query {
-                sl: &resolved.sl,
-                tl: &resolved.tl,
-                text: &text,
-            })?;
+            let input = read_input(text, file)?;
+            let translation = if lang::is_identity(&resolved.sl, &resolved.tl) {
+                Translation {
+                    primary: input.clone(),
+                    detected_source: Some(resolved.sl.clone()),
+                    synonyms: Vec::new(),
+                }
+            } else {
+                default_engine().translate(Query {
+                    sl: &resolved.sl,
+                    tl: &resolved.tl,
+                    text: &input,
+                })?
+            };
             let color = std::io::stdout().is_terminal();
             let meta = Meta {
                 sl: &resolved.sl,
                 tl: &resolved.tl,
-                text: &text,
+                text: &input,
             };
             let mut out = std::io::stdout();
             let _ = writeln!(out, "{}", render(&translation, filter, color, &meta));
@@ -130,6 +142,26 @@ fn run(args: &[String]) -> Result<i32> {
     }
 }
 
+fn read_input(text: Option<String>, file: Option<String>) -> Result<String> {
+    let raw = match input::resolve(text, file, std::io::stdin().is_terminal())? {
+        Source::Text(t) => t,
+        Source::File(path) => std::fs::read_to_string(&path)
+            .map_err(|e| Error::Config(format!("could not read {path}: {e}")))?,
+        Source::Stdin => {
+            let mut buffer = String::new();
+            std::io::stdin()
+                .read_to_string(&mut buffer)
+                .map_err(|e| Error::Config(e.to_string()))?;
+            buffer
+        }
+    };
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return Err(Error::BadArgs("no text to translate".to_string()));
+    }
+    Ok(trimmed.to_string())
+}
+
 fn default_hint(sl: &str, tl: &str) -> String {
     let color = std::io::stderr().is_terminal();
     paint(
@@ -188,6 +220,8 @@ fn help(color: bool) -> String {
         ("tt tl=<lang> <text>", "set the target, auto-detect the source language"),
         ("tt sl=<lang> tl=<lang> <text>", "set both languages explicitly"),
         ("tt p=<profile> <text>", "translate using a saved profile"),
+        ("tt f=<file> ...", "translate the contents of a file"),
+        ("... | tt ...", "translate piped stdin when given no text"),
     ] {
         o.push_str(&row(color, c, d, 32));
     }
