@@ -84,7 +84,7 @@ fn run(args: &[String]) -> Result<i32> {
                     paint(color, DIM, "open in browser:"),
                     color::hyperlink(color, &url, &url)
                 ));
-                eprintln!("{footer}");
+                eprintln!("\n{footer}");
             }
             Ok(0)
         }
