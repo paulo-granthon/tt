@@ -74,7 +74,7 @@ fn run(args: &[String]) -> Result<i32> {
             let _ = writeln!(out, "{}", render(&translation, filter, color, &meta));
             if color && filter != Filter::Quiet {
                 let mut footer = String::new();
-                if all_default && matches!(filter, Filter::Full | Filter::Verbose) {
+                if all_default {
                     footer.push_str(&default_hint(&resolved.sl, &resolved.tl));
                     footer.push('\n');
                 }
