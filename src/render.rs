@@ -66,10 +66,16 @@ fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
         paint(color, GREEN, "->"),
         paint(color, CYAN, target_name),
     );
-    out.push_str(&format!("{}\n{}\n\n", label("ORIGINAL"), indent(meta.text)));
     out.push_str(&format!(
-        "{}\n{}\n",
+        "{} {}\n{}\n\n",
+        label("ORIGINAL"),
+        paint(color, DIM, &format!("({source_name})")),
+        indent(meta.text)
+    ));
+    out.push_str(&format!(
+        "{} {}\n{}\n",
         label("TRANSLATION"),
+        paint(color, DIM, &format!("({target_name})")),
         indent(&paint(color, BOLD, &translation.primary))
     ));
 
