@@ -12,7 +12,7 @@ lint:
 
 install: build
     cargo install --path . --force
-    ./install-completions.sh
+    ./completions.sh
 
 completions:
-    ./install-completions.sh
+    ./completions.sh

@@ -39,7 +39,7 @@ cd tt
 # or:
 just install      # same thing via cargo install
 # or:
-cargo install --path .   # binary only; then ./install-completions.sh for completions
+cargo install --path .   # binary only; then ./completions.sh for completions
 ```
 
 ## Updating
