@@ -1,8 +1,9 @@
 use std::io::{IsTerminal, Read, Write};
 use std::process::exit;
 
+use tt::browser;
 use tt::cli::{parse, Command};
-use tt::color::{paint, BOLD, CYAN, DIM, GREEN, ITALIC, MAGENTA, YELLOW};
+use tt::color::{self, paint, BOLD, CYAN, DIM, GREEN, ITALIC, MAGENTA, YELLOW};
 use tt::config::Config;
 use tt::engine::{default_engine, Query, Translation};
 use tt::error::{Error, Result};
@@ -71,8 +72,19 @@ fn run(args: &[String]) -> Result<i32> {
             };
             let mut out = std::io::stdout();
             let _ = writeln!(out, "{}", render(&translation, filter, color, &meta));
-            if color && all_default && filter == Filter::Full {
-                eprintln!("{}", default_hint(&resolved.sl, &resolved.tl));
+            if color && filter != Filter::Quiet {
+                let mut footer = String::new();
+                if all_default && filter == Filter::Full {
+                    footer.push_str(&default_hint(&resolved.sl, &resolved.tl));
+                    footer.push('\n');
+                }
+                let url = browser::translate_url(&resolved.sl, &resolved.tl, &input);
+                footer.push_str(&format!(
+                    "{} {}",
+                    paint(color, DIM, "open in browser:"),
+                    color::hyperlink(color, &url, &url)
+                ));
+                eprintln!("{footer}");
             }
             Ok(0)
         }

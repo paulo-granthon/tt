@@ -14,3 +14,11 @@ pub fn paint(color: bool, code: &str, text: &str) -> String {
         text.to_string()
     }
 }
+
+pub fn hyperlink(enabled: bool, url: &str, label: &str) -> String {
+    if enabled {
+        format!("\x1b]8;;{url}\x1b\\{label}\x1b]8;;\x1b\\")
+    } else {
+        label.to_string()
+    }
+}
