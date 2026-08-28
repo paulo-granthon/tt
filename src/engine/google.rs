@@ -28,7 +28,7 @@ impl Engine for Google {
 
     fn translate(&self, query: Query) -> Result<Translation> {
         let body = ureq::get(ENDPOINT)
-            .query("client", "gtx")
+            .query("client", "dict-chrome-ex")
             .query("sl", query.sl)
             .query("tl", query.tl)
             .query("dt", "t")
