@@ -37,8 +37,17 @@ impl Engine for Google {
             .query("q", query.text)
             .set("User-Agent", USER_AGENT)
             .set("Accept", "*/*")
+            .set("Accept-Language", "en-US,en;q=0.9")
+            .set("Referer", "https://translate.google.com/")
             .call()
-            .map_err(|e| Error::Network(e.to_string()))?
+            .map_err(|error| match error {
+                ureq::Error::Status(429, _) => Error::Network(format!(
+                    "rate limited by Google (HTTP 429): too many requests from this network. \
+Wait a while and try again, or open in a browser: {}",
+                    crate::browser::translate_url(query.sl, query.tl, query.text)
+                )),
+                other => Error::Network(other.to_string()),
+            })?
             .into_string()
             .map_err(|e| Error::Network(e.to_string()))?;
         parse_response(&body)
