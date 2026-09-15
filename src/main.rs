@@ -79,11 +79,7 @@ fn run(args: &[String]) -> Result<i32> {
                     footer.push('\n');
                 }
                 let url = browser::translate_url(&resolved.sl, &resolved.tl, &input);
-                footer.push_str(&format!(
-                    "{} {}",
-                    paint(color, DIM, "open in browser:"),
-                    color::hyperlink(color, &url, &url)
-                ));
+                footer.push_str(&color::hyperlink(color, &url, &url));
                 eprintln!("\n{footer}");
             }
             Ok(0)
