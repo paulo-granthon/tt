@@ -18,8 +18,28 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
 
-  build:
+  version:
     needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      is_new: ${{ steps.check.outputs.is_new }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            echo "is_new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: [test, version]
     strategy:
       fail-fast: false
       matrix:
@@ -54,9 +74,23 @@ jobs:
           cp "target/$RUST_TARGET/release/tt" "$staging/"
           cp completions/tt.bash completions/_tt completions/tt.fish "$staging/completions/"
           tar -czf "tt-$TARGET.tar.gz" -C "$staging" .
-      - uses: softprops/action-gh-release@v2
+      - name: upload rolling latest
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
+          name: latest (rolling)
+          prerelease: true
+          body: >
+            Rolling build of the newest commit on main. Commit ${{ github.sha }},
+            built ${{ github.run_started_at }}. For a pinned build see the versioned
+            releases.
+          files: tt-${{ matrix.target }}.tar.gz
+      - name: upload versioned release
+        if: needs.version.outputs.is_new == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: v${{ needs.version.outputs.version }}
           files: tt-${{ matrix.target }}.tar.gz
 
   publish:

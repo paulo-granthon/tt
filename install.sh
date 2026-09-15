@@ -56,7 +56,7 @@ install_from_source() {
 
 install_from_release() {
     target="$(arch)-$(os)"
-    url="https://github.com/$REPO/releases/latest/download/$BIN-$target.tar.gz"
+    url="https://github.com/$REPO/releases/download/latest/$BIN-$target.tar.gz"
     tmp="$(mktemp -d)"
     trap 'rm -rf "$tmp"' EXIT
 
