@@ -31,6 +31,16 @@ pub fn render(translation: &Translation, filter: Filter, color: bool, meta: &Met
         }
         Filter::Full => {
             let mut out = String::new();
+            if meta.sl == "auto" {
+                if let Some(code) = &translation.detected_source {
+                    out.push_str(&paint(
+                        color,
+                        DIM,
+                        &format!("detected: {}", lang::display_name(code)),
+                    ));
+                    out.push('\n');
+                }
+            }
             if let Some(correction) = &translation.correction {
                 out.push_str(&paint(color, DIM, &format!("did you mean: {correction}")));
                 out.push('\n');
@@ -52,13 +62,19 @@ pub fn render(translation: &Translation, filter: Filter, color: bool, meta: &Met
 }
 
 fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
-    let source = if meta.sl == "auto" {
+    let auto = meta.sl == "auto";
+    let source = if auto {
         translation.detected_source.as_deref().unwrap_or("auto")
     } else {
         meta.sl
     };
-    let source_name = lang::name(source).unwrap_or(source);
-    let target_name = lang::name(meta.tl).unwrap_or(meta.tl);
+    let source_name = lang::display_name(source);
+    let target_name = lang::display_name(meta.tl);
+    let source_label = if auto {
+        format!("{source_name} (detected)")
+    } else {
+        source_name.clone()
+    };
 
     let label = |t: &str| paint(color, YELLOW, t);
     let indent = |t: &str| {
@@ -71,9 +87,9 @@ fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
     let mut out = format!(
         "{} {} {} {}\n\n",
         paint(color, DIM, "translating"),
-        paint(color, CYAN, source_name),
+        paint(color, CYAN, &source_label),
         paint(color, GREEN, "->"),
-        paint(color, CYAN, target_name),
+        paint(color, CYAN, &target_name),
     );
     let mut original = meta.text.to_string();
     if let Some(translit) = &translation.source_translit {
@@ -87,7 +103,7 @@ fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
     out.push_str(&format!(
         "{} {}\n{}\n\n",
         label("ORIGINAL"),
-        paint(color, DIM, &format!("({source_name})")),
+        paint(color, DIM, &format!("({source_label})")),
         indent(&original)
     ));
 

@@ -1,4 +1,6 @@
-use tt::lang::{canonical, is_identity, name, normalize_key, resolve_source, resolve_target};
+use tt::lang::{
+    canonical, display_name, is_identity, name, normalize_key, resolve_source, resolve_target,
+};
 
 #[test]
 fn normalize_strips_separators_and_case() {
@@ -88,4 +90,12 @@ fn name_maps_codes_to_display_names() {
     assert_eq!(name("en"), Some("English"));
     assert_eq!(name("pt-BR"), Some("Portuguese (Brazil)"));
     assert_eq!(name("zz"), None);
+}
+
+#[test]
+fn display_name_resolves_detected_short_codes() {
+    assert_eq!(display_name("pt"), "Portuguese (Brazil)");
+    assert_eq!(display_name("pt-BR"), "Portuguese (Brazil)");
+    assert_eq!(display_name("en"), "English");
+    assert_eq!(display_name("zz"), "zz");
 }

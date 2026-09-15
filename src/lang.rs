@@ -45,6 +45,13 @@ pub fn name(code: &str) -> Option<&'static str> {
         .map(|(_, n)| *n)
 }
 
+pub fn display_name(code: &str) -> String {
+    name(code)
+        .or_else(|| canonical(code).and_then(name))
+        .unwrap_or(code)
+        .to_string()
+}
+
 pub fn normalize_key(input: &str) -> String {
     input
         .chars()

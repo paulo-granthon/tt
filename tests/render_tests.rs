@@ -188,6 +188,54 @@ fn verbose_shows_source_transliteration_and_correction_under_original() {
 }
 
 #[test]
+fn full_shows_detected_language_when_source_is_auto() {
+    let t = Translation {
+        primary: "hey".to_string(),
+        detected_source: Some("pt".to_string()),
+        ..Default::default()
+    };
+    let m = Meta {
+        sl: "auto",
+        tl: "en",
+        text: "oi",
+    };
+    let out = render(&t, Filter::Full, false, &m);
+    assert!(out.starts_with("detected: Portuguese (Brazil)\n"));
+}
+
+#[test]
+fn full_omits_detected_line_for_explicit_source() {
+    let t = Translation {
+        primary: "hey".to_string(),
+        detected_source: Some("pt".to_string()),
+        ..Default::default()
+    };
+    let m = Meta {
+        sl: "pt-BR",
+        tl: "en",
+        text: "oi",
+    };
+    let out = render(&t, Filter::Full, false, &m);
+    assert!(!out.contains("detected:"));
+}
+
+#[test]
+fn verbose_marks_detected_source() {
+    let t = Translation {
+        primary: "translation".to_string(),
+        detected_source: Some("pt".to_string()),
+        ..Default::default()
+    };
+    let m = Meta {
+        sl: "auto",
+        tl: "en",
+        text: "documentação",
+    };
+    let out = render(&t, Filter::Verbose, false, &m);
+    assert!(out.contains("Portuguese (Brazil) (detected)"));
+}
+
+#[test]
 fn verbose_states_when_no_synonyms() {
     let v = render(&no_synonyms(), Filter::Verbose, false, &meta());
     assert!(v.contains("no synonyms for this translation"));
