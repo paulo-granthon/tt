@@ -21,6 +21,7 @@ jobs:
   build:
     needs: test
     strategy:
+      fail-fast: false
       matrix:
         include:
           - target: x86_64-linux
@@ -30,12 +31,13 @@ jobs:
             os: ubuntu-24.04-arm
             rust_target: aarch64-unknown-linux-gnu
           - target: x86_64-macos
-            os: macos-13
+            os: macos-latest
             rust_target: x86_64-apple-darwin
           - target: aarch64-macos
             os: macos-latest
             rust_target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
