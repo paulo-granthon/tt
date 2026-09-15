@@ -30,7 +30,16 @@ pub fn render(translation: &Translation, filter: Filter, color: bool, meta: &Met
             }
         }
         Filter::Full => {
-            let mut out = paint(color, BOLD, &translation.primary);
+            let mut out = String::new();
+            if let Some(correction) = &translation.correction {
+                out.push_str(&paint(color, DIM, &format!("did you mean: {correction}")));
+                out.push('\n');
+            }
+            out.push_str(&paint(color, BOLD, &translation.primary));
+            if let Some(translit) = &translation.target_translit {
+                out.push('\n');
+                out.push_str(&paint(color, DIM, translit));
+            }
             let block = synonyms_block(translation, color);
             if !block.is_empty() {
                 out.push_str("\n\n");
@@ -66,17 +75,32 @@ fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
         paint(color, GREEN, "->"),
         paint(color, CYAN, target_name),
     );
+    let mut original = meta.text.to_string();
+    if let Some(translit) = &translation.source_translit {
+        original.push('\n');
+        original.push_str(&paint(color, DIM, translit));
+    }
+    if let Some(correction) = &translation.correction {
+        original.push('\n');
+        original.push_str(&paint(color, DIM, &format!("did you mean: {correction}")));
+    }
     out.push_str(&format!(
         "{} {}\n{}\n\n",
         label("ORIGINAL"),
         paint(color, DIM, &format!("({source_name})")),
-        indent(meta.text)
+        indent(&original)
     ));
+
+    let mut translated = paint(color, BOLD, &translation.primary);
+    if let Some(translit) = &translation.target_translit {
+        translated.push('\n');
+        translated.push_str(&paint(color, DIM, translit));
+    }
     out.push_str(&format!(
         "{} {}\n{}\n",
         label("TRANSLATION"),
         paint(color, DIM, &format!("({target_name})")),
-        indent(&paint(color, BOLD, &translation.primary))
+        indent(&translated)
     ));
 
     let block = synonyms_block(translation, color);

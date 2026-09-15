@@ -15,6 +15,7 @@ fn sample() -> Translation {
                 back: vec!["hi".to_string()],
             },
         ],
+        ..Default::default()
     }
 }
 
@@ -22,7 +23,7 @@ fn no_synonyms() -> Translation {
     Translation {
         primary: "casa".to_string(),
         detected_source: Some("en".to_string()),
-        synonyms: vec![],
+        ..Default::default()
     }
 }
 
@@ -93,11 +94,11 @@ fn synonyms_filter_empty_message_colored_on_tty() {
 fn synonyms_block_without_back_has_no_double_space() {
     let t = Translation {
         primary: "x".to_string(),
-        detected_source: None,
         synonyms: vec![Synonym {
             word: "solo".to_string(),
             back: vec![],
         }],
+        ..Default::default()
     };
     assert_eq!(render(&t, Filter::Synonyms, false, &meta()), "solo");
 }
@@ -132,6 +133,58 @@ fn verbose_auto_uses_detected_source_name() {
     let v = render(&sample(), Filter::Verbose, false, &m);
     assert!(v.contains("English"));
     assert!(v.contains("Spanish"));
+}
+
+#[test]
+fn full_shows_correction_before_translation() {
+    let t = Translation {
+        primary: "receber".to_string(),
+        correction: Some("receive".to_string()),
+        ..Default::default()
+    };
+    let out = render(&t, Filter::Full, false, &meta());
+    assert!(out.starts_with("did you mean: receive\n"));
+    assert!(out.contains("receber"));
+}
+
+#[test]
+fn full_shows_target_transliteration_under_primary() {
+    let t = Translation {
+        primary: "翻訳".to_string(),
+        target_translit: Some("Hon'yaku".to_string()),
+        ..Default::default()
+    };
+    assert_eq!(render(&t, Filter::Full, false, &meta()), "翻訳\nHon'yaku");
+}
+
+#[test]
+fn quiet_omits_correction_and_transliteration() {
+    let t = Translation {
+        primary: "翻訳".to_string(),
+        correction: Some("x".to_string()),
+        target_translit: Some("Hon'yaku".to_string()),
+        ..Default::default()
+    };
+    assert_eq!(render(&t, Filter::Quiet, false, &meta()), "翻訳");
+}
+
+#[test]
+fn verbose_shows_source_transliteration_and_correction_under_original() {
+    let t = Translation {
+        primary: "translation".to_string(),
+        detected_source: Some("ja".to_string()),
+        source_translit: Some("Hon'yaku".to_string()),
+        correction: Some("fixed".to_string()),
+        ..Default::default()
+    };
+    let m = Meta {
+        sl: "ja",
+        tl: "en",
+        text: "翻訳",
+    };
+    let out = render(&t, Filter::Verbose, false, &m);
+    assert!(out.contains("Hon'yaku"));
+    assert!(out.contains("did you mean: fixed"));
 }
 
 #[test]

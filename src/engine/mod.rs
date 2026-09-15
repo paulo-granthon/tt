@@ -8,11 +8,14 @@ pub struct Synonym {
     pub back: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Translation {
     pub primary: String,
     pub detected_source: Option<String>,
     pub synonyms: Vec<Synonym>,
+    pub correction: Option<String>,
+    pub source_translit: Option<String>,
+    pub target_translit: Option<String>,
 }
 
 pub struct Query<'a> {

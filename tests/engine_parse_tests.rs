@@ -56,6 +56,32 @@ fn rejects_empty_translation() {
 }
 
 #[test]
+fn parses_transliteration_rows() {
+    let body = "[[[\"翻訳\",\"translation\",null,null,10],[null,null,\"Hon'yaku\",\"tranz\"]],null,\"en\"]";
+    let t = parse_response(body).unwrap();
+    assert_eq!(t.primary, "翻訳");
+    assert_eq!(t.target_translit.as_deref(), Some("Hon'yaku"));
+    assert_eq!(t.source_translit.as_deref(), Some("tranz"));
+}
+
+#[test]
+fn parses_spelling_correction() {
+    let body = "[[[\"receber\",\"recieve\",null,null,3]],null,\"en\",null,null,null,0.9,[\"<b><i>receive</i></b>\",\"receive\",[1]]]";
+    let t = parse_response(body).unwrap();
+    assert_eq!(t.primary, "receber");
+    assert_eq!(t.correction.as_deref(), Some("receive"));
+}
+
+#[test]
+fn no_correction_when_field_empty() {
+    let body = "[[[\"casa\",\"house\",null,null,1]],null,\"en\",null,null,null,1.0,[]]";
+    let t = parse_response(body).unwrap();
+    assert_eq!(t.correction, None);
+    assert_eq!(t.source_translit, None);
+    assert_eq!(t.target_translit, None);
+}
+
+#[test]
 fn tolerates_null_back_translations() {
     let body = "[[[\"casa\",\"house\",null,null,1]],[[\"noun\",[\"casa\"],[[\"casa\",null,null,0.9]],\"house\",1]],\"en\"]";
     let t = parse_response(body).unwrap();

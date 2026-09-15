@@ -34,6 +34,8 @@ impl Engine for Google {
             .query("dt", "t")
             .query("dt", "bd")
             .query("dt", "at")
+            .query("dt", "rm")
+            .query("dt", "qc")
             .query("q", query.text)
             .set("User-Agent", USER_AGENT)
             .set("Accept", "*/*")
@@ -58,10 +60,14 @@ pub fn parse_response(body: &str) -> Result<Translation> {
     let value: Value = serde_json::from_str(body).map_err(|e| Error::Parse(e.to_string()))?;
 
     let mut primary = String::new();
+    let (mut source_translit, mut target_translit) = (None, None);
     if let Some(sentences) = value.get(0).and_then(Value::as_array) {
         for sentence in sentences {
             if let Some(chunk) = sentence.get(0).and_then(Value::as_str) {
                 primary.push_str(chunk);
+            } else {
+                target_translit = target_translit.or_else(|| translit(sentence, 2));
+                source_translit = source_translit.or_else(|| translit(sentence, 3));
             }
         }
     }
@@ -70,6 +76,13 @@ pub fn parse_response(body: &str) -> Result<Translation> {
     }
 
     let detected_source = value.get(2).and_then(Value::as_str).map(str::to_string);
+
+    let correction = value
+        .get(7)
+        .and_then(Value::as_array)
+        .and_then(|c| c.get(1))
+        .and_then(Value::as_str)
+        .map(str::to_string);
 
     let mut synonyms = Vec::new();
     if let Some(groups) = value.get(1).and_then(Value::as_array) {
@@ -103,5 +116,16 @@ pub fn parse_response(body: &str) -> Result<Translation> {
         primary,
         detected_source,
         synonyms,
+        correction,
+        source_translit,
+        target_translit,
     })
+}
+
+fn translit(sentence: &Value, index: usize) -> Option<String> {
+    sentence
+        .get(index)
+        .and_then(Value::as_str)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
 }

@@ -55,7 +55,7 @@ fn run(args: &[String]) -> Result<i32> {
                 Translation {
                     primary: input.clone(),
                     detected_source: Some(resolved.sl.clone()),
-                    synonyms: Vec::new(),
+                    ..Translation::default()
                 }
             } else {
                 default_engine().translate(Query {
