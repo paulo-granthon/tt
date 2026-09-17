@@ -9,6 +9,7 @@ pub struct Translate {
     pub text: Option<String>,
     pub file: Option<String>,
     pub filter: Filter,
+    pub no_cache: bool,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -25,6 +26,8 @@ pub enum Command {
         tl: String,
     },
     ProfileList,
+    CacheStats,
+    CacheClear,
     Languages,
     Update,
     ProfileDelete {
@@ -59,9 +62,19 @@ pub fn parse(args: &[String]) -> Result<Command> {
             }
             Ok(Command::Update)
         }
+        Some("cache") => parse_cache(&args[1..]),
         Some("default") => parse_default(&args[1..]),
         Some("profile") => parse_profile(&args[1..]),
         _ => parse_translate(args),
+    }
+}
+
+fn parse_cache(rest: &[String]) -> Result<Command> {
+    match rest.first().map(String::as_str) {
+        None => Ok(Command::CacheStats),
+        Some("clear") if rest.len() == 1 => Ok(Command::CacheClear),
+        Some("clear") => Err(Error::BadArgs("'cache clear' takes no arguments".to_string())),
+        Some(other) => Err(Error::BadArgs(format!("unknown cache subcommand: {other}"))),
     }
 }
 
@@ -163,6 +176,7 @@ fn parse_patch(tail: &[String]) -> Result<Command> {
 fn parse_translate(args: &[String]) -> Result<Command> {
     let (mut profile, mut sl, mut tl, mut file) = (None, None, None, None);
     let (mut quiet, mut synonyms, mut verbose, mut json) = (false, false, false, false);
+    let mut no_cache = false;
     let mut text_parts = Vec::new();
     for token in args {
         match token.as_str() {
@@ -170,6 +184,7 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             "--synonyms" | "-s" => synonyms = true,
             "--verbose" | "-v" => verbose = true,
             "--json" | "-j" => json = true,
+            "--no-cache" => no_cache = true,
             _ => match split_kv(token) {
                 Some(("sl", v)) => sl = Some(v.to_string()),
                 Some(("tl", v)) => tl = Some(v.to_string()),
@@ -200,6 +215,7 @@ fn parse_translate(args: &[String]) -> Result<Command> {
         tl,
         text,
         file,
+        no_cache,
         filter: if quiet {
             Filter::Quiet
         } else if synonyms {

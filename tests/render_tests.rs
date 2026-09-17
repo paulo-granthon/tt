@@ -33,6 +33,7 @@ fn meta<'a>() -> Meta<'a> {
         tl: "pt-BR",
         text: "hello",
         engine: "fake",
+        cached: false,
     }
 }
 
@@ -131,6 +132,7 @@ fn verbose_auto_uses_detected_source_name() {
         tl: "es",
         text: "hello",
         engine: "fake",
+        cached: false,
     };
     let v = render(&sample(), Filter::Verbose, false, &m);
     assert!(v.contains("English"));
@@ -184,6 +186,7 @@ fn verbose_shows_source_transliteration_and_correction_under_original() {
         tl: "en",
         text: "翻訳",
         engine: "fake",
+        cached: false,
     };
     let out = render(&t, Filter::Verbose, false, &m);
     assert!(out.contains("Hon'yaku"));
@@ -202,6 +205,7 @@ fn full_shows_detected_language_when_source_is_auto() {
         tl: "en",
         text: "oi",
         engine: "fake",
+        cached: false,
     };
     let out = render(&t, Filter::Full, false, &m);
     assert!(out.starts_with("detected: Portuguese (Brazil)\n"));
@@ -219,6 +223,7 @@ fn full_omits_detected_line_for_explicit_source() {
         tl: "en",
         text: "oi",
         engine: "fake",
+        cached: false,
     };
     let out = render(&t, Filter::Full, false, &m);
     assert!(!out.contains("detected:"));
@@ -236,6 +241,7 @@ fn verbose_marks_detected_source() {
         tl: "en",
         text: "documentação",
         engine: "fake",
+        cached: false,
     };
     let out = render(&t, Filter::Verbose, false, &m);
     assert!(out.contains("Portuguese (Brazil) (detected)"));
@@ -249,7 +255,7 @@ fn verbose_states_when_no_synonyms() {
 
 #[test]
 fn json_carries_every_field_in_a_single_line() {
-    let out = json(&sample(), &meta(), false);
+    let out = json(&sample(), &meta());
     assert!(!out.contains('\n'));
     let value: serde_json::Value = serde_json::from_str(&out).unwrap();
     assert_eq!(value["sl"], "en");
@@ -267,5 +273,26 @@ fn json_carries_every_field_in_a_single_line() {
 
 #[test]
 fn json_filter_renders_the_same_as_json() {
-    assert_eq!(render(&sample(), Filter::Json, true, &meta()), json(&sample(), &meta(), false));
+    assert_eq!(render(&sample(), Filter::Json, true, &meta()), json(&sample(), &meta()));
+}
+
+#[test]
+fn verbose_marks_cached_results_in_the_header() {
+    let m = Meta {
+        cached: true,
+        ..meta()
+    };
+    let out = render(&sample(), Filter::Verbose, false, &m);
+    assert!(out.starts_with("translating English -> Portuguese (Brazil) (cached)\n"));
+    assert!(!render(&sample(), Filter::Verbose, false, &meta()).contains("(cached)"));
+}
+
+#[test]
+fn json_reports_cached_from_meta() {
+    let m = Meta {
+        cached: true,
+        ..meta()
+    };
+    let value: serde_json::Value = serde_json::from_str(&json(&sample(), &m)).unwrap();
+    assert_eq!(value["cached"], true);
 }

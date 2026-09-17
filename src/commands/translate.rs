@@ -1,4 +1,5 @@
 use crate::browser;
+use crate::cache::{Cache, Key};
 use crate::cli::Translate;
 use crate::config::Config;
 use crate::engine::{Query, Translation};
@@ -16,20 +17,32 @@ pub fn run(request: Translate, env: &mut Env) -> Result<i32> {
         text,
         file,
         filter,
+        no_cache,
     } = request;
     let all_default = profile.is_none() && sl.is_none() && tl.is_none() && text.is_some() && file.is_none();
     let config = Config::load_from(&env.config_path)?;
     let resolved = config.resolve(profile.as_deref(), sl.as_deref(), tl.as_deref())?;
     let input = read_input(text, file, env)?;
+    let key = Key {
+        engine: env.engine.name(),
+        sl: &resolved.sl,
+        tl: &resolved.tl,
+        text: &input,
+    };
+    let cache = (!no_cache).then(|| Cache::new(env.cache_dir.clone()));
+    let mut cached = false;
     let translation = if lang::is_identity(&resolved.sl, &resolved.tl) {
         Translation {
             primary: input.clone(),
             detected_source: Some(resolved.sl.clone()),
             ..Translation::default()
         }
+    } else if let Some(hit) = cache.as_ref().and_then(|cache| cache.get(&key)) {
+        cached = true;
+        hit
     } else {
         let err = &mut *env.err;
-        env.engine.translate(
+        let fresh = env.engine.translate(
             Query {
                 sl: &resolved.sl,
                 tl: &resolved.tl,
@@ -38,13 +51,18 @@ pub fn run(request: Translate, env: &mut Env) -> Result<i32> {
             &mut |line| {
                 let _ = writeln!(err, "{line}");
             },
-        )?
+        )?;
+        if let Some(cache) = &cache {
+            cache.put(&key, &fresh);
+        }
+        fresh
     };
     let meta = Meta {
         sl: &resolved.sl,
         tl: &resolved.tl,
         text: &input,
         engine: env.engine.name(),
+        cached,
     };
     let _ = writeln!(env.out, "{}", render(&translation, filter, env.out_tty, &meta));
     if env.out_tty && !matches!(filter, Filter::Quiet | Filter::Json) {

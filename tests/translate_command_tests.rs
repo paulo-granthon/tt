@@ -1,6 +1,7 @@
 mod common;
 
 use common::{sample, Fake, Setup};
+use tt::cache::Cache;
 use tt::config::Config;
 use tt::render::{render, Filter, Meta};
 
@@ -22,6 +23,7 @@ fn translates_with_the_default_profile() {
         tl: "en",
         text: "bom dia",
         engine: "fake",
+        cached: false,
     };
     assert_eq!(run.out, format!("{}\n", render(&sample(), Filter::Full, false, &meta)));
     assert!(run.err.is_empty());
@@ -189,4 +191,81 @@ fn json_prints_one_structured_line_and_no_footer() {
     assert_eq!(value["synonyms"][0]["back"][0], "bom dia");
     assert_eq!(value["engine"], "fake");
     assert_eq!(value["cached"], false);
+}
+
+#[test]
+fn second_identical_query_is_served_from_the_cache() {
+    let first = Setup::new().piped();
+    let probe = first.probe.clone();
+    let first = first.run(&["bom dia"]);
+    assert_eq!(probe.calls(), 1);
+    let second = Setup::reuse(first.dir).piped();
+    let probe = second.probe.clone();
+    let second = second.run(&["bom dia"]);
+    assert_eq!(probe.calls(), 0);
+    assert_eq!(second.out, first.out);
+}
+
+#[test]
+fn no_cache_skips_lookup_and_store() {
+    let first = Setup::new().piped().run(&["bom dia"]);
+    let second = Setup::reuse(first.dir).piped();
+    let probe = second.probe.clone();
+    let second = second.run(&["--no-cache", "bom dia"]);
+    assert_eq!(probe.calls(), 1);
+    let third = Setup::reuse(second.dir).piped();
+    let cache_dir = third.cache_dir();
+    let stats = Cache::new(cache_dir).stats().unwrap();
+    assert_eq!(stats.entries, 1);
+    let probe = third.probe.clone();
+    third.run(&["--no-cache", "boa noite"]);
+    assert_eq!(probe.calls(), 1);
+}
+
+#[test]
+fn no_cache_never_stores() {
+    let setup = Setup::new().piped();
+    let cache_dir = setup.cache_dir();
+    setup.run(&["--no-cache", "bom dia"]);
+    assert_eq!(Cache::new(cache_dir).stats().unwrap().entries, 0);
+}
+
+#[test]
+fn identity_results_are_never_cached() {
+    let setup = Setup::new().piped();
+    let cache_dir = setup.cache_dir();
+    setup.run(&["sl=en", "tl=en", "hello"]);
+    assert_eq!(Cache::new(cache_dir).stats().unwrap().entries, 0);
+}
+
+#[test]
+fn engine_failures_are_not_cached() {
+    let (engine, probe) = Fake::failing("boom");
+    let setup = Setup::new().piped().engine(engine, probe);
+    let cache_dir = setup.cache_dir();
+    setup.run(&["oi"]);
+    assert_eq!(Cache::new(cache_dir).stats().unwrap().entries, 0);
+}
+
+#[test]
+fn json_reports_a_cache_hit() {
+    let first = Setup::new().piped().run(&["-j", "bom dia"]);
+    assert!(first.out.contains("\"cached\":false"));
+    let second = Setup::reuse(first.dir).piped().run(&["-j", "bom dia"]);
+    assert!(second.out.contains("\"cached\":true"));
+}
+
+#[test]
+fn verbose_marks_a_cache_hit() {
+    let first = Setup::new().piped().run(&["-v", "bom dia"]);
+    assert!(!first.out.contains("(cached)"));
+    let second = Setup::reuse(first.dir).piped().run(&["-v", "bom dia"]);
+    assert!(second.out.starts_with("translating Portuguese (Brazil) (detected) -> English (cached)\n"));
+}
+
+#[test]
+fn full_output_is_identical_on_a_hit() {
+    let first = Setup::new().piped().run(&["bom dia"]);
+    let second = Setup::reuse(first.dir).piped().run(&["bom dia"]);
+    assert_eq!(first.out, second.out);
 }

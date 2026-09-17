@@ -1,5 +1,6 @@
 pub mod app;
 pub mod browser;
+pub mod cache;
 pub mod cli;
 pub mod color;
 pub mod commands;

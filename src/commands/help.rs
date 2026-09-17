@@ -68,6 +68,7 @@ pub fn help(color: bool) -> String {
         ("-s, --synonyms", "only the synonyms and back translations"),
         ("-v, --verbose", "a labeled breakdown: languages, original, result"),
         ("-j, --json", "the full result as one JSON line, for scripts"),
+        ("--no-cache", "skip the on-disk cache for this call"),
         ("-h, --help", "show this help"),
     ] {
         o.push_str(&row(color, c, d, 32));
@@ -96,6 +97,15 @@ pub fn help(color: bool) -> String {
 
     o.push_str(&format!("{}\n", sec("LANGUAGES")));
     o.push_str(&row(color, "tt languages", "list supported language codes", 32));
+    o.push('\n');
+
+    o.push_str(&format!("{}\n", sec("CACHE")));
+    for (c, d) in [
+        ("tt cache", "show cached entries, size and path"),
+        ("tt cache clear", "delete every cached translation"),
+    ] {
+        o.push_str(&row(color, c, d, 32));
+    }
     o.push('\n');
 
     o.push_str(&format!("{}\n", sec("UPDATE")));

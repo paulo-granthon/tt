@@ -1,13 +1,19 @@
 use std::io::IsTerminal;
+use std::path::PathBuf;
 use std::process::exit;
 
 use tt::config::Config;
 use tt::engine::default_engine;
-use tt::env::Env;
+use tt::env::{cache_dir, Env};
+use tt::error::Result;
+
+fn paths() -> Result<(PathBuf, PathBuf)> {
+    Ok((Config::path()?, cache_dir()?))
+}
 
 fn main() {
-    let config_path = match Config::path() {
-        Ok(path) => path,
+    let (config_path, cache_dir) = match paths() {
+        Ok(paths) => paths,
         Err(e) => {
             eprintln!("tt: {e}");
             exit(e.exit_code());
@@ -25,6 +31,7 @@ fn main() {
         stdin_tty,
         engine: default_engine(),
         config_path,
+        cache_dir,
     };
     exit(tt::app::run(&args, &mut env));
 }

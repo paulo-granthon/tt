@@ -151,8 +151,18 @@ impl Setup {
         self
     }
 
+    pub fn reuse(dir: TempDir) -> Self {
+        let mut setup = Setup::new();
+        setup.dir = dir;
+        setup
+    }
+
     pub fn config_path(&self) -> PathBuf {
         self.dir.path("config.toml")
+    }
+
+    pub fn cache_dir(&self) -> PathBuf {
+        self.dir.path("cache")
     }
 
     pub fn run(self, args: &[&str]) -> Outcome {
@@ -170,6 +180,7 @@ impl Setup {
                 stdin_tty,
                 engine: self.engine,
                 config_path: self.dir.path("config.toml"),
+                cache_dir: self.dir.path("cache"),
             };
             app::run(&args.iter().map(|s| s.to_string()).collect::<Vec<_>>(), &mut env)
         };

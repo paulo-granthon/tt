@@ -13,12 +13,13 @@ _tt() {
         '--verbose[labeled verbose breakdown]'
         '-j[full result as one JSON line]'
         '--json[full result as one JSON line]'
+        '--no-cache[skip the on-disk cache for this call]'
         '-h[show help]'
         '--help[show help]'
     )
 
     if (( CURRENT == 2 )); then
-        _values 'command or param' default profile languages update 'sl=' 'tl=' 'p=' 'f=' && return
+        _values 'command or param' default profile languages cache update 'sl=' 'tl=' 'p=' 'f=' && return
     fi
 
     case "$words[2]" in
@@ -30,6 +31,9 @@ _tt() {
             ;;
         default)
             _values 'field' 'sl=' 'tl=' && return
+            ;;
+        cache)
+            _values 'subcommand' clear && return
             ;;
     esac
 

@@ -6,7 +6,7 @@ _tt() {
     }
 
     local langs="auto en pt-BR pt-PT es fr de it ja ko zh-CN zh-TW ru ar nl sv pl tr hi el he cs da fi no uk vi th id ro hu"
-    local flags="-q --quiet -s --synonyms -v --verbose -j --json -h --help"
+    local flags="-q --quiet -s --synonyms -v --verbose -j --json --no-cache -h --help"
 
     case "$cur" in
         sl=*) COMPREPLY=($(compgen -W "$langs" -P "sl=" -- "${cur#sl=}")); return ;;
@@ -16,7 +16,7 @@ _tt() {
     esac
 
     if [ "${COMP_CWORD}" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "default profile languages update sl= tl= p= f= $flags" -- "$cur"))
+        COMPREPLY=($(compgen -W "default profile languages cache update sl= tl= p= f= $flags" -- "$cur"))
         return
     fi
 
@@ -30,6 +30,8 @@ _tt() {
             return ;;
         default)
             COMPREPLY=($(compgen -W "sl= tl=" -- "$cur")); return ;;
+        cache)
+            COMPREPLY=($(compgen -W "clear" -- "$cur")); return ;;
     esac
 
     COMPREPLY=($(compgen -W "sl= tl= p= f= $flags" -- "$cur"))

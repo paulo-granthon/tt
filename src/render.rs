@@ -18,6 +18,7 @@ pub struct Meta<'a> {
     pub tl: &'a str,
     pub text: &'a str,
     pub engine: &'a str,
+    pub cached: bool,
 }
 
 #[derive(Serialize)]
@@ -35,7 +36,7 @@ struct Document<'a> {
     cached: bool,
 }
 
-pub fn json(translation: &Translation, meta: &Meta, cached: bool) -> String {
+pub fn json(translation: &Translation, meta: &Meta) -> String {
     serde_json::to_string(&Document {
         sl: meta.sl,
         tl: meta.tl,
@@ -47,7 +48,7 @@ pub fn json(translation: &Translation, meta: &Meta, cached: bool) -> String {
         target_translit: translation.target_translit.as_deref(),
         synonyms: &translation.synonyms,
         engine: meta.engine,
-        cached,
+        cached: meta.cached,
     })
     .unwrap_or_default()
 }
@@ -94,7 +95,7 @@ pub fn render(translation: &Translation, filter: Filter, color: bool, meta: &Met
             out
         }
         Filter::Verbose => verbose(translation, color, meta),
-        Filter::Json => json(translation, meta, false),
+        Filter::Json => json(translation, meta),
     }
 }
 
@@ -122,11 +123,16 @@ fn verbose(translation: &Translation, color: bool, meta: &Meta) -> String {
     };
 
     let mut out = format!(
-        "{} {} {} {}\n\n",
+        "{} {} {} {}{}\n\n",
         paint(color, DIM, "translating"),
         paint(color, CYAN, &source_label),
         paint(color, GREEN, "->"),
         paint(color, CYAN, &target_name),
+        if meta.cached {
+            paint(color, DIM, " (cached)")
+        } else {
+            String::new()
+        },
     );
     let mut original = meta.text.to_string();
     if let Some(translit) = &translation.source_translit {

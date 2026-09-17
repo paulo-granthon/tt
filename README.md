@@ -95,6 +95,7 @@ all mean Brazilian Portuguese. Use `auto` (the default source) to detect.
 | `-s`, `--synonyms` | print only the synonyms block |
 | `-v`, `--verbose` | a labeled breakdown: languages, original text, translation, synonyms |
 | `-j`, `--json` | the full result as one JSON line, for scripts |
+| `--no-cache` | skip the on-disk cache for this call |
 | `-h`, `--help` | show help |
 
 Output is colored when printed to a terminal and plain when piped, so
@@ -110,6 +111,20 @@ tt -j tl=en "bom dia" | jq -r '.synonyms[].word'
 ```json
 {"sl":"auto","tl":"en","detected":"pt","text":"bom dia","primary":"good morning","correction":null,"source_translit":null,"target_translit":null,"synonyms":[{"word":"good morning","back":["bom dia"]}],"engine":"google","cached":false}
 ```
+
+## Cache
+
+Every translation is stored on disk, so repeating a phrase answers without
+touching the network. Entries never expire, one file per entry, oldest evicted
+past 1000 entries.
+
+```sh
+tt cache          # entries, size on disk, path
+tt cache clear    # delete every cached translation
+tt --no-cache "bom dia"
+```
+
+The cache lives in the platform cache directory, `~/.cache/tt` on Linux.
 
 ## Defaults and profiles
 

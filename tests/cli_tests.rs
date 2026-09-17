@@ -29,6 +29,7 @@ fn bare_text_uses_default_profile() {
             text: Some("bom dia".to_string()),
             file: None,
             filter: Filter::Full,
+            no_cache: false,
         })
     );
 }
@@ -61,6 +62,7 @@ fn parses_sl_tl_profile() {
             text: Some("hallo".to_string()),
             file: None,
             filter: Filter::Full,
+            no_cache: false,
         })
     );
 }
@@ -298,5 +300,28 @@ fn json_is_exclusive_with_the_other_filters() {
     for flags in [["-j", "-q"], ["-j", "-s"], ["-j", "-v"]] {
         let err = parse(&args(&[flags[0], flags[1], "oi"])).unwrap_err().to_string();
         assert_eq!(err, "--quiet, --synonyms, --verbose and --json are mutually exclusive");
+    }
+}
+
+#[test]
+fn cache_subcommands_parse() {
+    assert_eq!(parse(&args(&["cache"])).unwrap(), Command::CacheStats);
+    assert_eq!(parse(&args(&["cache", "clear"])).unwrap(), Command::CacheClear);
+    assert!(parse(&args(&["cache", "nope"])).is_err());
+    assert!(parse(&args(&["cache", "clear", "now"])).is_err());
+}
+
+#[test]
+fn no_cache_flag_is_parsed() {
+    match parse(&args(&["--no-cache", "tl=en", "oi"])).unwrap() {
+        Command::Translate(Translate { no_cache, text, .. }) => {
+            assert!(no_cache);
+            assert_eq!(text.as_deref(), Some("oi"));
+        }
+        other => panic!("unexpected {other:?}"),
+    }
+    match parse(&args(&["oi"])).unwrap() {
+        Command::Translate(Translate { no_cache, .. }) => assert!(!no_cache),
+        other => panic!("unexpected {other:?}"),
     }
 }

@@ -1,6 +1,6 @@
 
 use crate::cli::{parse, Command};
-use crate::commands::{help, profile, translate, update};
+use crate::commands::{cache, help, profile, translate, update};
 use crate::env::Env;
 use crate::error::Result;
 
@@ -24,6 +24,8 @@ fn dispatch(args: &[String], env: &mut Env) -> Result<i32> {
         Command::DefaultSet { sl, tl } => profile::default_set(sl.as_deref(), tl.as_deref(), env),
         Command::ProfileAdd { name, sl, tl } => profile::add(&name, &sl, &tl, env),
         Command::ProfileList => profile::list(env),
+        Command::CacheStats => cache::stats(env),
+        Command::CacheClear => cache::clear(env),
         Command::ProfileDelete { name } => profile::delete(&name, env),
         Command::ProfilePatch {
             name,

@@ -5,14 +5,17 @@ complete -c tt -f
 complete -c tt -n '__fish_use_subcommand' -a default -d 'get or set default languages'
 complete -c tt -n '__fish_use_subcommand' -a profile -d 'manage profiles'
 complete -c tt -n '__fish_use_subcommand' -a languages -d 'list supported language codes'
+complete -c tt -n '__fish_use_subcommand' -a cache -d 'show or clear the translation cache'
 complete -c tt -n '__fish_use_subcommand' -a update -d 'install the latest release'
 
 complete -c tt -n '__fish_seen_subcommand_from profile' -a 'add list ls delete rm patch'
+complete -c tt -n '__fish_seen_subcommand_from cache' -a clear
 
 complete -c tt -s q -l quiet -d 'print only the primary translation'
 complete -c tt -s s -l synonyms -d 'print only the synonyms block'
 complete -c tt -s v -l verbose -d 'labeled verbose breakdown'
 complete -c tt -s j -l json -d 'full result as one JSON line'
+complete -c tt -l no-cache -d 'skip the on-disk cache for this call'
 complete -c tt -s h -l help -d 'show help'
 
 complete -c tt -a 'f=' -d 'translate a file'
