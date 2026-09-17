@@ -1,4 +1,4 @@
-use crate::color::{paint, BOLD, CYAN, DIM, GREEN, YELLOW};
+use crate::color::{hyperlink, paint, BOLD, CYAN, DIM, GREEN, YELLOW};
 use crate::engine::Translation;
 use crate::lang;
 
@@ -146,4 +146,21 @@ fn synonyms_block(translation: &Translation, color: bool) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+pub fn default_hint(sl: &str, tl: &str) -> String {
+    format!(
+        "sl={sl} and tl={tl} come from the default profile; \
+change them with `tt default sl=<lang> tl=<lang>`"
+    )
+}
+
+pub fn footer(color: bool, hint: Option<&str>, url: &str) -> String {
+    let mut out = String::from("\n");
+    if let Some(hint) = hint {
+        out.push_str(&paint(color, DIM, hint));
+        out.push('\n');
+    }
+    out.push_str(&hyperlink(color, url, url));
+    out
 }

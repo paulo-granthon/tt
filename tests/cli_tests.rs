@@ -1,4 +1,4 @@
-use tt::cli::{parse, Command};
+use tt::cli::{parse, Command, Translate};
 use tt::render::Filter;
 
 fn args(list: &[&str]) -> Vec<String> {
@@ -22,14 +22,14 @@ fn bare_text_uses_default_profile() {
     let cmd = parse(&args(&["bom dia"])).unwrap();
     assert_eq!(
         cmd,
-        Command::Translate {
+        Command::Translate(Translate {
             profile: None,
             sl: None,
             tl: None,
             text: Some("bom dia".to_string()),
             file: None,
             filter: Filter::Full,
-        }
+        })
     );
 }
 
@@ -37,7 +37,7 @@ fn bare_text_uses_default_profile() {
 fn unquoted_words_join_into_text() {
     let cmd = parse(&args(&["bom", "dia"])).unwrap();
     match cmd {
-        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("bom dia")),
+        Command::Translate(Translate { text, .. }) => assert_eq!(text.as_deref(), Some("bom dia")),
         other => panic!("expected translate, got {other:?}"),
     }
 }
@@ -54,25 +54,25 @@ fn parses_sl_tl_profile() {
     let cmd = parse(&args(&["p=br", "sl=de", "tl=en", "hallo"])).unwrap();
     assert_eq!(
         cmd,
-        Command::Translate {
+        Command::Translate(Translate {
             profile: Some("br".to_string()),
             sl: Some("de".to_string()),
             tl: Some("en".to_string()),
             text: Some("hallo".to_string()),
             file: None,
             filter: Filter::Full,
-        }
+        })
     );
 }
 
 #[test]
 fn quiet_flag_sets_filter() {
     match parse(&args(&["-q", "hi"])).unwrap() {
-        Command::Translate { filter, .. } => assert_eq!(filter, Filter::Quiet),
+        Command::Translate(Translate { filter, .. }) => assert_eq!(filter, Filter::Quiet),
         other => panic!("got {other:?}"),
     }
     match parse(&args(&["--quiet", "hi"])).unwrap() {
-        Command::Translate { filter, .. } => assert_eq!(filter, Filter::Quiet),
+        Command::Translate(Translate { filter, .. }) => assert_eq!(filter, Filter::Quiet),
         other => panic!("got {other:?}"),
     }
 }
@@ -80,11 +80,11 @@ fn quiet_flag_sets_filter() {
 #[test]
 fn synonyms_flag_sets_filter() {
     match parse(&args(&["--synonyms", "hi"])).unwrap() {
-        Command::Translate { filter, .. } => assert_eq!(filter, Filter::Synonyms),
+        Command::Translate(Translate { filter, .. }) => assert_eq!(filter, Filter::Synonyms),
         other => panic!("got {other:?}"),
     }
     match parse(&args(&["-s", "hi"])).unwrap() {
-        Command::Translate { filter, .. } => assert_eq!(filter, Filter::Synonyms),
+        Command::Translate(Translate { filter, .. }) => assert_eq!(filter, Filter::Synonyms),
         other => panic!("got {other:?}"),
     }
 }
@@ -93,7 +93,7 @@ fn synonyms_flag_sets_filter() {
 fn verbose_flag_sets_filter() {
     for flag in ["-v", "--verbose"] {
         match parse(&args(&[flag, "hi"])).unwrap() {
-            Command::Translate { filter, .. } => assert_eq!(filter, Filter::Verbose),
+            Command::Translate(Translate { filter, .. }) => assert_eq!(filter, Filter::Verbose),
             other => panic!("got {other:?}"),
         }
     }
@@ -110,7 +110,7 @@ fn output_filters_are_mutually_exclusive() {
 #[test]
 fn no_text_parses_with_none_for_stdin_resolution() {
     match parse(&args(&["sl=pt", "tl=en"])).unwrap() {
-        Command::Translate { text, file, .. } => {
+        Command::Translate(Translate { text, file, .. }) => {
             assert_eq!(text, None);
             assert_eq!(file, None);
         }
@@ -121,7 +121,7 @@ fn no_text_parses_with_none_for_stdin_resolution() {
 #[test]
 fn text_with_equals_is_not_a_param() {
     match parse(&args(&["E=mc2"])).unwrap() {
-        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("E=mc2")),
+        Command::Translate(Translate { text, .. }) => assert_eq!(text.as_deref(), Some("E=mc2")),
         other => panic!("got {other:?}"),
     }
 }
@@ -129,7 +129,7 @@ fn text_with_equals_is_not_a_param() {
 #[test]
 fn file_param_sets_file() {
     match parse(&args(&["tl=en", "f=notes.txt"])).unwrap() {
-        Command::Translate { file, text, .. } => {
+        Command::Translate(Translate { file, text, .. }) => {
             assert_eq!(file.as_deref(), Some("notes.txt"));
             assert_eq!(text, None);
         }
@@ -145,7 +145,7 @@ fn file_and_inline_text_conflict() {
 #[test]
 fn dash_text_is_preserved_for_stdin() {
     match parse(&args(&["tl=en", "-"])).unwrap() {
-        Command::Translate { text, .. } => assert_eq!(text.as_deref(), Some("-")),
+        Command::Translate(Translate { text, .. }) => assert_eq!(text.as_deref(), Some("-")),
         other => panic!("got {other:?}"),
     }
 }

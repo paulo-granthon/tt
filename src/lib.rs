@@ -1,8 +1,11 @@
+pub mod app;
 pub mod browser;
 pub mod cli;
 pub mod color;
+pub mod commands;
 pub mod config;
 pub mod engine;
+pub mod env;
 pub mod error;
 pub mod input;
 pub mod lang;

@@ -2,15 +2,18 @@ use crate::error::{Error, Result};
 use crate::render::Filter;
 
 #[derive(Debug, PartialEq, Eq)]
+pub struct Translate {
+    pub profile: Option<String>,
+    pub sl: Option<String>,
+    pub tl: Option<String>,
+    pub text: Option<String>,
+    pub file: Option<String>,
+    pub filter: Filter,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum Command {
-    Translate {
-        profile: Option<String>,
-        sl: Option<String>,
-        tl: Option<String>,
-        text: Option<String>,
-        file: Option<String>,
-        filter: Filter,
-    },
+    Translate(Translate),
     DefaultShow,
     DefaultSet {
         sl: Option<String>,
@@ -190,7 +193,7 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             "cannot combine f= with inline text; use one".to_string(),
         ));
     }
-    Ok(Command::Translate {
+    Ok(Command::Translate(Translate {
         profile,
         sl,
         tl,
@@ -205,5 +208,5 @@ fn parse_translate(args: &[String]) -> Result<Command> {
         } else {
             Filter::Full
         },
-    })
+    }))
 }
