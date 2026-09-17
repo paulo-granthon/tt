@@ -11,6 +11,8 @@ _tt() {
         '--synonyms[print only the synonyms block]'
         '-v[labeled verbose breakdown]'
         '--verbose[labeled verbose breakdown]'
+        '-j[full result as one JSON line]'
+        '--json[full result as one JSON line]'
         '-h[show help]'
         '--help[show help]'
     )

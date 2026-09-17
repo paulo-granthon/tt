@@ -1,5 +1,5 @@
 use tt::engine::{Synonym, Translation};
-use tt::render::{render, Filter, Meta};
+use tt::render::{json, render, Filter, Meta};
 
 fn sample() -> Translation {
     Translation {
@@ -32,6 +32,7 @@ fn meta<'a>() -> Meta<'a> {
         sl: "en",
         tl: "pt-BR",
         text: "hello",
+        engine: "fake",
     }
 }
 
@@ -129,6 +130,7 @@ fn verbose_auto_uses_detected_source_name() {
         sl: "auto",
         tl: "es",
         text: "hello",
+        engine: "fake",
     };
     let v = render(&sample(), Filter::Verbose, false, &m);
     assert!(v.contains("English"));
@@ -181,6 +183,7 @@ fn verbose_shows_source_transliteration_and_correction_under_original() {
         sl: "ja",
         tl: "en",
         text: "翻訳",
+        engine: "fake",
     };
     let out = render(&t, Filter::Verbose, false, &m);
     assert!(out.contains("Hon'yaku"));
@@ -198,6 +201,7 @@ fn full_shows_detected_language_when_source_is_auto() {
         sl: "auto",
         tl: "en",
         text: "oi",
+        engine: "fake",
     };
     let out = render(&t, Filter::Full, false, &m);
     assert!(out.starts_with("detected: Portuguese (Brazil)\n"));
@@ -214,6 +218,7 @@ fn full_omits_detected_line_for_explicit_source() {
         sl: "pt-BR",
         tl: "en",
         text: "oi",
+        engine: "fake",
     };
     let out = render(&t, Filter::Full, false, &m);
     assert!(!out.contains("detected:"));
@@ -230,6 +235,7 @@ fn verbose_marks_detected_source() {
         sl: "auto",
         tl: "en",
         text: "documentação",
+        engine: "fake",
     };
     let out = render(&t, Filter::Verbose, false, &m);
     assert!(out.contains("Portuguese (Brazil) (detected)"));
@@ -239,4 +245,27 @@ fn verbose_marks_detected_source() {
 fn verbose_states_when_no_synonyms() {
     let v = render(&no_synonyms(), Filter::Verbose, false, &meta());
     assert!(v.contains("no synonyms for this translation"));
+}
+
+#[test]
+fn json_carries_every_field_in_a_single_line() {
+    let out = json(&sample(), &meta(), false);
+    assert!(!out.contains('\n'));
+    let value: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(value["sl"], "en");
+    assert_eq!(value["tl"], "pt-BR");
+    assert_eq!(value["text"], "hello");
+    assert_eq!(value["primary"], "olá");
+    assert_eq!(value["detected"], "en");
+    assert_eq!(value["engine"], "fake");
+    assert_eq!(value["cached"], false);
+    assert_eq!(value["synonyms"].as_array().unwrap().len(), sample().synonyms.len());
+    for key in ["correction", "source_translit", "target_translit"] {
+        assert!(value.get(key).is_some(), "missing {key}");
+    }
+}
+
+#[test]
+fn json_filter_renders_the_same_as_json() {
+    assert_eq!(render(&sample(), Filter::Json, true, &meta()), json(&sample(), &meta(), false));
 }

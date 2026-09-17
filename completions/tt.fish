@@ -12,6 +12,7 @@ complete -c tt -n '__fish_seen_subcommand_from profile' -a 'add list ls delete r
 complete -c tt -s q -l quiet -d 'print only the primary translation'
 complete -c tt -s s -l synonyms -d 'print only the synonyms block'
 complete -c tt -s v -l verbose -d 'labeled verbose breakdown'
+complete -c tt -s j -l json -d 'full result as one JSON line'
 complete -c tt -s h -l help -d 'show help'
 
 complete -c tt -a 'f=' -d 'translate a file'

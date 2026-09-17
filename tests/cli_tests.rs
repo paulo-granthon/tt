@@ -279,3 +279,24 @@ fn profile_requires_subcommand() {
 fn profile_unknown_subcommand() {
     assert!(parse(&args(&["profile", "frobnicate", "br"])).is_err());
 }
+
+#[test]
+fn json_flag_selects_json_filter() {
+    for flag in ["-j", "--json"] {
+        match parse(&args(&[flag, "oi"])).unwrap() {
+            Command::Translate(Translate { filter, text, .. }) => {
+                assert_eq!(filter, Filter::Json);
+                assert_eq!(text.as_deref(), Some("oi"));
+            }
+            other => panic!("unexpected {other:?}"),
+        }
+    }
+}
+
+#[test]
+fn json_is_exclusive_with_the_other_filters() {
+    for flags in [["-j", "-q"], ["-j", "-s"], ["-j", "-v"]] {
+        let err = parse(&args(&[flags[0], flags[1], "oi"])).unwrap_err().to_string();
+        assert_eq!(err, "--quiet, --synonyms, --verbose and --json are mutually exclusive");
+    }
+}

@@ -2,15 +2,17 @@ pub mod fallback;
 pub mod google;
 pub mod lane;
 
+use serde::{Deserialize, Serialize};
+
 use crate::error::Result;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Synonym {
     pub word: String,
     pub back: Vec<String>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Translation {
     pub primary: String,
     pub detected_source: Option<String>,

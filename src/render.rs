@@ -1,5 +1,7 @@
+use serde::Serialize;
+
 use crate::color::{hyperlink, paint, BOLD, CYAN, DIM, GREEN, YELLOW};
-use crate::engine::Translation;
+use crate::engine::{Synonym, Translation};
 use crate::lang;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -8,12 +10,46 @@ pub enum Filter {
     Quiet,
     Synonyms,
     Verbose,
+    Json,
 }
 
 pub struct Meta<'a> {
     pub sl: &'a str,
     pub tl: &'a str,
     pub text: &'a str,
+    pub engine: &'a str,
+}
+
+#[derive(Serialize)]
+struct Document<'a> {
+    sl: &'a str,
+    tl: &'a str,
+    detected: Option<&'a str>,
+    text: &'a str,
+    primary: &'a str,
+    correction: Option<&'a str>,
+    source_translit: Option<&'a str>,
+    target_translit: Option<&'a str>,
+    synonyms: &'a [Synonym],
+    engine: &'a str,
+    cached: bool,
+}
+
+pub fn json(translation: &Translation, meta: &Meta, cached: bool) -> String {
+    serde_json::to_string(&Document {
+        sl: meta.sl,
+        tl: meta.tl,
+        detected: translation.detected_source.as_deref(),
+        text: meta.text,
+        primary: &translation.primary,
+        correction: translation.correction.as_deref(),
+        source_translit: translation.source_translit.as_deref(),
+        target_translit: translation.target_translit.as_deref(),
+        synonyms: &translation.synonyms,
+        engine: meta.engine,
+        cached,
+    })
+    .unwrap_or_default()
 }
 
 const NO_SYNONYMS: &str = "no synonyms for this translation";
@@ -58,6 +94,7 @@ pub fn render(translation: &Translation, filter: Filter, color: bool, meta: &Met
             out
         }
         Filter::Verbose => verbose(translation, color, meta),
+        Filter::Json => json(translation, meta, false),
     }
 }
 

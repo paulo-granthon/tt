@@ -21,6 +21,7 @@ fn translates_with_the_default_profile() {
         sl: "auto",
         tl: "en",
         text: "bom dia",
+        engine: "fake",
     };
     assert_eq!(run.out, format!("{}\n", render(&sample(), Filter::Full, false, &meta)));
     assert!(run.err.is_empty());
@@ -167,5 +168,25 @@ fn engine_failure_exits_four_with_message() {
 fn exclusive_flags_are_rejected() {
     let run = Setup::new().piped().run(&["-q", "-v", "oi"]);
     assert_eq!(run.code, 2);
-    assert_eq!(run.err, "tt: --quiet, --synonyms and --verbose are mutually exclusive\n");
+    assert_eq!(run.err, "tt: --quiet, --synonyms, --verbose and --json are mutually exclusive\n");
+}
+
+#[test]
+fn json_prints_one_structured_line_and_no_footer() {
+    let run = Setup::new().run(&["-j", "bom dia"]);
+    assert_eq!(run.code, 0);
+    assert!(run.err.is_empty());
+    assert_eq!(run.out.matches('\n').count(), 1);
+    assert!(!run.out.contains("\x1b["));
+    let value: serde_json::Value = serde_json::from_str(&run.out).unwrap();
+    assert_eq!(value["sl"], "auto");
+    assert_eq!(value["tl"], "en");
+    assert_eq!(value["detected"], "pt");
+    assert_eq!(value["text"], "bom dia");
+    assert_eq!(value["primary"], "good morning");
+    assert_eq!(value["correction"], serde_json::Value::Null);
+    assert_eq!(value["synonyms"][0]["word"], "good morning");
+    assert_eq!(value["synonyms"][0]["back"][0], "bom dia");
+    assert_eq!(value["engine"], "fake");
+    assert_eq!(value["cached"], false);
 }

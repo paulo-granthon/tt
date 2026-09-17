@@ -94,10 +94,22 @@ all mean Brazilian Portuguese. Use `auto` (the default source) to detect.
 | `-q`, `--quiet` | print only the primary translation |
 | `-s`, `--synonyms` | print only the synonyms block |
 | `-v`, `--verbose` | a labeled breakdown: languages, original text, translation, synonyms |
+| `-j`, `--json` | the full result as one JSON line, for scripts |
 | `-h`, `--help` | show help |
 
 Output is colored when printed to a terminal and plain when piped, so
 `tt -q tl=en "oi" | pbcopy` copies just the translation.
+
+`--json` prints one line with every field the engine returned, for `jq` and
+friends:
+
+```sh
+tt -j tl=en "bom dia" | jq -r '.synonyms[].word'
+```
+
+```json
+{"sl":"auto","tl":"en","detected":"pt","text":"bom dia","primary":"good morning","correction":null,"source_translit":null,"target_translit":null,"synonyms":[{"word":"good morning","back":["bom dia"]}],"engine":"google","cached":false}
+```
 
 ## Defaults and profiles
 

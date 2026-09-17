@@ -6,7 +6,7 @@ _tt() {
     }
 
     local langs="auto en pt-BR pt-PT es fr de it ja ko zh-CN zh-TW ru ar nl sv pl tr hi el he cs da fi no uk vi th id ro hu"
-    local flags="-q --quiet -s --synonyms -v --verbose -h --help"
+    local flags="-q --quiet -s --synonyms -v --verbose -j --json -h --help"
 
     case "$cur" in
         sl=*) COMPREPLY=($(compgen -W "$langs" -P "sl=" -- "${cur#sl=}")); return ;;

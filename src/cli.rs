@@ -162,13 +162,14 @@ fn parse_patch(tail: &[String]) -> Result<Command> {
 
 fn parse_translate(args: &[String]) -> Result<Command> {
     let (mut profile, mut sl, mut tl, mut file) = (None, None, None, None);
-    let (mut quiet, mut synonyms, mut verbose) = (false, false, false);
+    let (mut quiet, mut synonyms, mut verbose, mut json) = (false, false, false, false);
     let mut text_parts = Vec::new();
     for token in args {
         match token.as_str() {
             "--quiet" | "-q" => quiet = true,
             "--synonyms" | "-s" => synonyms = true,
             "--verbose" | "-v" => verbose = true,
+            "--json" | "-j" => json = true,
             _ => match split_kv(token) {
                 Some(("sl", v)) => sl = Some(v.to_string()),
                 Some(("tl", v)) => tl = Some(v.to_string()),
@@ -178,9 +179,9 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             },
         }
     }
-    if u8::from(quiet) + u8::from(synonyms) + u8::from(verbose) > 1 {
+    if u8::from(quiet) + u8::from(synonyms) + u8::from(verbose) + u8::from(json) > 1 {
         return Err(Error::BadArgs(
-            "--quiet, --synonyms and --verbose are mutually exclusive".to_string(),
+            "--quiet, --synonyms, --verbose and --json are mutually exclusive".to_string(),
         ));
     }
     let text = if text_parts.is_empty() {
@@ -205,6 +206,8 @@ fn parse_translate(args: &[String]) -> Result<Command> {
             Filter::Synonyms
         } else if verbose {
             Filter::Verbose
+        } else if json {
+            Filter::Json
         } else {
             Filter::Full
         },

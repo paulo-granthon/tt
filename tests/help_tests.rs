@@ -34,7 +34,7 @@ fn help_mentions_every_command() {
     let out = Setup::new().piped().run(&["--help"]).out;
     for cmd in [
         "tt <text>", "tt tl=<lang> <text>", "tt p=<profile> <text>", "tt f=<file> ...",
-        "-q, --quiet", "-s, --synonyms", "-v, --verbose", "tt default", "tt profile add",
+        "-q, --quiet", "-s, --synonyms", "-v, --verbose", "-j, --json", "tt default", "tt profile add",
         "tt profile list", "tt profile patch", "tt profile delete", "tt languages", "tt update",
     ] {
         assert!(out.contains(cmd), "missing {cmd}");

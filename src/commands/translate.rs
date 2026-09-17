@@ -44,9 +44,10 @@ pub fn run(request: Translate, env: &mut Env) -> Result<i32> {
         sl: &resolved.sl,
         tl: &resolved.tl,
         text: &input,
+        engine: env.engine.name(),
     };
     let _ = writeln!(env.out, "{}", render(&translation, filter, env.out_tty, &meta));
-    if env.out_tty && filter != Filter::Quiet {
+    if env.out_tty && !matches!(filter, Filter::Quiet | Filter::Json) {
         let hint = (all_default && filter == Filter::Full).then(|| default_hint(&resolved.sl, &resolved.tl));
         let url = browser::translate_url(&resolved.sl, &resolved.tl, &input);
         let _ = writeln!(env.err, "{}", footer(env.err_tty, hint.as_deref(), &url));

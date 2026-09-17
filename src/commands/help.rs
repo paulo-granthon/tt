@@ -67,6 +67,7 @@ pub fn help(color: bool) -> String {
         ("-q, --quiet", "only the primary translation"),
         ("-s, --synonyms", "only the synonyms and back translations"),
         ("-v, --verbose", "a labeled breakdown: languages, original, result"),
+        ("-j, --json", "the full result as one JSON line, for scripts"),
         ("-h, --help", "show this help"),
     ] {
         o.push_str(&row(color, c, d, 32));
