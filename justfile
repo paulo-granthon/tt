@@ -16,3 +16,6 @@ install: build
 
 completions:
     ./completions.sh
+
+live:
+    cargo test --test live_tests -- --ignored
