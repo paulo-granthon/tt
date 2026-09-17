@@ -30,6 +30,9 @@ Either way it installs the binary and shell completions for bash, zsh, and fish.
 cargo install ttranslate   # the crate is ttranslate, the binary is still tt
 ```
 
+The crate name `tt` was already taken, so the package is `ttranslate` while the
+installed binary stays `tt`.
+
 ### From source
 
 ```sh
@@ -80,6 +83,14 @@ are the same explicit language, tt returns the input unchanged without a request
 
 Languages accept aliases and any capitalization: `pt`, `br`, `ptbr`, `pt-BR`
 all mean Brazilian Portuguese. Use `auto` (the default source) to detect.
+
+```sh
+tt languages     # every supported code with its language name (tt langs works too)
+```
+
+On a terminal, tt also prints a footer to stderr with the matching Google
+Translate URL, clickable where the terminal supports it. It goes to stderr, so
+redirecting or piping stdout still gives you only the translation.
 
 ### Flags
 
@@ -141,6 +152,17 @@ tt profile delete brazil
 
 Config lives at `~/.config/tt/config.toml` (or the platform equivalent).
 
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| 0 | success |
+| 2 | bad arguments |
+| 3 | unknown language |
+| 4 | network or engine failure |
+| 5 | unreadable engine response |
+| 6 | config or filesystem error |
+
 ## Resilience
 
 Google throttles its unofficial endpoints per client and per host. `tt` keeps a
@@ -174,8 +196,16 @@ endpoint and its response shape still work.
 
 ```sh
 cargo build --release
-cargo test
+cargo test                 # unit and integration tests, no network
+cargo clippy --all-targets -- -D warnings
+just live                  # opt-in probes that hit the real endpoints
 ```
+
+`just` wraps the same commands (`just build`, `just test`, `just lint`,
+`just install`, `just completions`, `just live`). The test suite never touches
+the network: engine parsing runs against saved fixtures and the commands run
+against a fake engine. The live probes are marked `#[ignore]` and only run when
+asked.
 
 ## License
 
