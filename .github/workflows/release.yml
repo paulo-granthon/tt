@@ -74,6 +74,8 @@ jobs:
           cp "target/$RUST_TARGET/release/tt" "$staging/"
           cp completions/tt.bash completions/_tt completions/tt.fish "$staging/completions/"
           tar -czf "tt-$TARGET.tar.gz" -C "$staging" .
+      - id: built
+        run: echo "at=$(date -u +'%Y-%m-%d %H:%M UTC')" >> "$GITHUB_OUTPUT"
       - name: upload rolling latest
         uses: softprops/action-gh-release@v2
         with:
@@ -82,7 +84,7 @@ jobs:
           prerelease: true
           body: >
             Rolling build of the newest commit on main. Commit ${{ github.sha }},
-            built ${{ github.run_started_at }}. For a pinned build see the versioned
+            built ${{ steps.built.outputs.at }}. For a pinned build see the versioned
             releases.
           files: tt-${{ matrix.target }}.tar.gz
       - name: upload versioned release
