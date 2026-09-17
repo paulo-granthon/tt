@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 682 665" width="682" height="665" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">
+<rect width="682" height="665" rx="10" fill="#11111b"/>
+<circle cx="22" cy="18" r="5.5" fill="#f38ba8"/>
+<circle cx="40" cy="18" r="5.5" fill="#f9e2af"/>
+<circle cx="58" cy="18" r="5.5" fill="#a6e3a1"/>
+<text x="22" y="48" fill="#cdd6f4"><tspan xml:space="preserve" fill="#a6e3a1" font-weight="700">$ </tspan><tspan xml:space="preserve">tt sl=pt tl=en &quot;bom dia&quot;</tspan></text>
+<text x="22" y="69" fill="#cdd6f4"><tspan xml:space="preserve" font-weight="700">good morning</tspan></text>
+<text x="22" y="111" fill="#cdd6f4"><tspan xml:space="preserve" fill="#89dceb">Good morning!</tspan><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">Bom dia!</tspan></text>
+<text x="22" y="132" fill="#cdd6f4"><tspan xml:space="preserve" fill="#89dceb">Good day!</tspan><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">Bom dia!</tspan></text>
+<text x="22" y="174" fill="#cdd6f4"><tspan xml:space="preserve">https://translate.google.com/?sl=pt-BR&amp;tl=en&amp;text=bom%20dia&amp;op=translate</tspan></text>
+<text x="22" y="216" fill="#cdd6f4"><tspan xml:space="preserve" fill="#a6e3a1" font-weight="700">$ </tspan><tspan xml:space="preserve">tt -v tl=es &quot;good morning&quot;</tspan></text>
+<text x="22" y="237" fill="#cdd6f4"><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">translating</tspan><tspan xml:space="preserve"> </tspan><tspan xml:space="preserve" fill="#89dceb">English (detected)</tspan><tspan xml:space="preserve"> </tspan><tspan xml:space="preserve" fill="#a6e3a1">-&gt;</tspan><tspan xml:space="preserve"> </tspan><tspan xml:space="preserve" fill="#89dceb">Spanish</tspan></text>
+<text x="22" y="279" fill="#cdd6f4"><tspan xml:space="preserve" fill="#f9e2af">ORIGINAL</tspan><tspan xml:space="preserve"> </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">(English (detected))</tspan></text>
+<text x="22" y="300" fill="#cdd6f4"><tspan xml:space="preserve">  good morning</tspan></text>
+<text x="22" y="321" fill="#cdd6f4"><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">ˌɡo͝od ˈmôrniNG</tspan></text>
+<text x="22" y="363" fill="#cdd6f4"><tspan xml:space="preserve" fill="#f9e2af">TRANSLATION</tspan><tspan xml:space="preserve"> </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">(Spanish)</tspan></text>
+<text x="22" y="384" fill="#cdd6f4"><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" font-weight="700">buen día</tspan></text>
+<text x="22" y="426" fill="#cdd6f4"><tspan xml:space="preserve" fill="#f9e2af">SYNONYMS</tspan></text>
+<text x="22" y="447" fill="#cdd6f4"><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#89dceb">¡Buenos días!</tspan><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">Good morning!, Good day!</tspan></text>
+<text x="22" y="468" fill="#cdd6f4"><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#89dceb">¡Buenas mañanas!</tspan><tspan xml:space="preserve">  </tspan><tspan xml:space="preserve" fill="#7f849c" opacity="0.85">Good morning!</tspan></text>
+<text x="22" y="510" fill="#cdd6f4"><tspan xml:space="preserve">https://translate.google.com/?sl=auto&amp;tl=es&amp;text=good%20morning&amp;op=translate</tspan></text>
+<text x="22" y="552" fill="#cdd6f4"><tspan xml:space="preserve" fill="#a6e3a1" font-weight="700">$ </tspan><tspan xml:space="preserve">tt -j tl=en &quot;bom dia&quot; | jq -c &#x27;{primary, cached}&#x27;</tspan></text>
+<text x="22" y="573" fill="#cdd6f4"><tspan xml:space="preserve" font-weight="700">{</tspan><tspan xml:space="preserve" font-weight="700">&quot;primary&quot;</tspan><tspan xml:space="preserve" font-weight="700">:</tspan><tspan xml:space="preserve" fill="#a6e3a1">&quot;good morning&quot;</tspan><tspan xml:space="preserve" font-weight="700">,</tspan><tspan xml:space="preserve" font-weight="700">&quot;cached&quot;</tspan><tspan xml:space="preserve" font-weight="700">:</tspan><tspan xml:space="preserve">false</tspan><tspan xml:space="preserve" font-weight="700">}</tspan></text>
+<text x="22" y="615" fill="#cdd6f4"><tspan xml:space="preserve" fill="#a6e3a1" font-weight="700">$ </tspan><tspan xml:space="preserve">tt -j tl=en &quot;bom dia&quot; | jq -c &#x27;{primary, cached}&#x27;</tspan></text>
+<text x="22" y="636" fill="#cdd6f4"><tspan xml:space="preserve" font-weight="700">{</tspan><tspan xml:space="preserve" font-weight="700">&quot;primary&quot;</tspan><tspan xml:space="preserve" font-weight="700">:</tspan><tspan xml:space="preserve" fill="#a6e3a1">&quot;good morning&quot;</tspan><tspan xml:space="preserve" font-weight="700">,</tspan><tspan xml:space="preserve" font-weight="700">&quot;cached&quot;</tspan><tspan xml:space="preserve" font-weight="700">:</tspan><tspan xml:space="preserve">true</tspan><tspan xml:space="preserve" font-weight="700">}</tspan></text>
+</svg>

@@ -4,13 +4,7 @@ A fast command-line translator. Give it text, get the translation, plus the
 synonyms and their back translations, the way the Google Translate web page
 shows alternatives.
 
-```console
-$ tt sl=pt tl=en "bom dia"
-good morning
-
-good morning   bom dia, bom-dia
-morning        manhã
-```
+![tt translating from the shell](docs/demo.svg)
 
 ## Why
 
