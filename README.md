@@ -30,6 +30,12 @@ curl -fsSL https://raw.githubusercontent.com/paulo-granthon/tt/main/install.sh |
 builds from source, otherwise it downloads the release binary for your platform.
 Either way it installs the binary and shell completions for bash, zsh, and fish.
 
+### From crates.io
+
+```sh
+cargo install ttranslate   # the crate is ttranslate, the binary is still tt
+```
+
 ### From source
 
 ```sh

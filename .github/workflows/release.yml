@@ -107,9 +107,12 @@ jobs:
             echo "no CARGO_REGISTRY_TOKEN, skipping crates.io publish"
             exit 0
           fi
-          version=$(cargo metadata --no-deps --format-version 1 | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
-          if cargo search tt | grep -q "^tt = \"$version\""; then
-            echo "version $version already on crates.io, skipping"
+          meta=$(cargo metadata --no-deps --format-version 1)
+          name=$(echo "$meta" | jq -r '.packages[0].name')
+          version=$(echo "$meta" | jq -r '.packages[0].version')
+          code=$(curl -s -o /dev/null -w '%{http_code}' -A "$name-ci" "https://crates.io/api/v1/crates/$name/$version")
+          if [ "$code" = "200" ]; then
+            echo "$name $version already on crates.io, skipping"
           else
             cargo publish
           fi

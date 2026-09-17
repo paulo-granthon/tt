@@ -1,5 +1,5 @@
 [package]
-name = "tt"
+name = "ttranslate"
 version = "0.1.0"
 edition = "2021"
 description = "Command-line text translator with synonyms and back translations"
