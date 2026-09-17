@@ -120,6 +120,35 @@ tt profile delete brazil
 
 Config lives at `~/.config/tt/config.toml` (or the platform equivalent).
 
+## Resilience
+
+Google throttles its unofficial endpoints per client and per host. `tt` keeps a
+list of eight lanes (host, client and response format combinations) and walks
+them in order. A lane that fails on the network is retried in the background
+after 1s, 2s and 4s while the next lane is tried immediately, the first answer
+wins, and the whole attempt gives up after 20 seconds with a link to the web
+page. Progress goes to stderr so pipes stay clean.
+
+## Status
+
+[![google lanes](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/overall.json)](https://github.com/paulo-granthon/tt/actions/workflows/live.yml)
+
+A scheduled workflow probes every lane every six hours from GitHub's runners.
+Google throttles datacenter addresses harder than home connections, so a red
+lane can be a false alarm for you, while green is a reliable signal that the
+endpoint and its response shape still work.
+
+| lane | status |
+| --- | --- |
+| googleapis/dict-chrome-ex | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/googleapis_dict_chrome_ex.json) |
+| googleapis/at | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/googleapis_at.json) |
+| clients5/dict-chrome-ex | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/clients5_dict_chrome_ex.json) |
+| clients5/at | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/clients5_at.json) |
+| google.com/dict-chrome-ex | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/google_com_dict_chrome_ex.json) |
+| google.com/at | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/google_com_at.json) |
+| googleapis/t/dict-chrome-ex | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/googleapis_t_dict_chrome_ex.json) |
+| googleapis/t/at | ![](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/paulo-granthon/tt/status/googleapis_t_at.json) |
+
 ## Building
 
 ```sh
