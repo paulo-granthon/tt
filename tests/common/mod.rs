@@ -82,7 +82,7 @@ impl Engine for Fake {
         "fake"
     }
 
-    fn translate(&self, query: Query) -> Result<Translation> {
+    fn translate(&self, query: Query, _log: &mut dyn FnMut(&str)) -> Result<Translation> {
         self.probe.calls.fetch_add(1, Ordering::SeqCst);
         self.probe.seen.lock().unwrap().push((
             query.sl.to_string(),

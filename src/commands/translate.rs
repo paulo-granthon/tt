@@ -1,4 +1,3 @@
-
 use crate::browser;
 use crate::cli::Translate;
 use crate::config::Config;
@@ -29,11 +28,17 @@ pub fn run(request: Translate, env: &mut Env) -> Result<i32> {
             ..Translation::default()
         }
     } else {
-        env.engine.translate(Query {
-            sl: &resolved.sl,
-            tl: &resolved.tl,
-            text: &input,
-        })?
+        let err = &mut *env.err;
+        env.engine.translate(
+            Query {
+                sl: &resolved.sl,
+                tl: &resolved.tl,
+                text: &input,
+            },
+            &mut |line| {
+                let _ = writeln!(err, "{line}");
+            },
+        )?
     };
     let meta = Meta {
         sl: &resolved.sl,

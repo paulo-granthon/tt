@@ -1,4 +1,4 @@
-use tt::engine::google::parse_response;
+use tt::engine::google::{parse_response, parse_t_response};
 
 const HELLO: &str = include_str!("fixtures/hello_en_pt.json");
 const HOUSE: &str = include_str!("fixtures/house_no_dict.json");
@@ -88,4 +88,29 @@ fn tolerates_null_back_translations() {
     assert_eq!(t.synonyms.len(), 1);
     assert_eq!(t.synonyms[0].word, "casa");
     assert!(t.synonyms[0].back.is_empty());
+}
+
+const T_AUTO: &str = include_str!("fixtures/t_auto.json");
+const T_EXPLICIT: &str = include_str!("fixtures/t_explicit.json");
+
+#[test]
+fn t_format_with_auto_source_yields_primary_and_detected() {
+    let t = parse_t_response(T_AUTO).unwrap();
+    assert_eq!(t.primary, "good morning. all good?");
+    assert_eq!(t.detected_source.as_deref(), Some("pt"));
+    assert!(t.synonyms.is_empty());
+}
+
+#[test]
+fn t_format_with_explicit_source_yields_primary_only() {
+    let t = parse_t_response(T_EXPLICIT).unwrap();
+    assert_eq!(t.primary, "good morning");
+    assert_eq!(t.detected_source, None);
+}
+
+#[test]
+fn t_format_rejects_empty_and_html() {
+    assert!(parse_t_response("[]").is_err());
+    assert!(parse_t_response("[[\"\",\"pt\"]]").is_err());
+    assert!(parse_t_response("<html>Sorry</html>").is_err());
 }

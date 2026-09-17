@@ -1,23 +1,112 @@
+use std::time::Duration;
+
 use serde_json::Value;
 
+use crate::browser;
+use crate::engine::fallback::{race, DEFAULT_POLICY};
+use crate::engine::lane::Lane;
 use crate::engine::{Engine, Query, Synonym, Translation};
 use crate::error::{Error, Result};
 
-const ENDPOINT: &str = "https://translate.googleapis.com/translate_a/single";
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+const GOOGLEAPIS: &str = "https://translate.googleapis.com";
+const CLIENTS5: &str = "https://clients5.google.com";
+const GOOGLE_COM: &str = "https://translate.google.com";
 
-pub struct Google;
+pub static LANES: [Lane; 8] = [
+    Lane {
+        name: "googleapis/dict-chrome-ex",
+        build: &|agent, q| single(agent, q, GOOGLEAPIS, "dict-chrome-ex"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "googleapis/at",
+        build: &|agent, q| single(agent, q, GOOGLEAPIS, "at"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "clients5/dict-chrome-ex",
+        build: &|agent, q| single(agent, q, CLIENTS5, "dict-chrome-ex"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "clients5/at",
+        build: &|agent, q| single(agent, q, CLIENTS5, "at"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "google.com/dict-chrome-ex",
+        build: &|agent, q| single(agent, q, GOOGLE_COM, "dict-chrome-ex"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "google.com/at",
+        build: &|agent, q| single(agent, q, GOOGLE_COM, "at"),
+        parse: parse_response,
+    },
+    Lane {
+        name: "googleapis/t/dict-chrome-ex",
+        build: &|agent, q| t(agent, q, GOOGLEAPIS, "dict-chrome-ex"),
+        parse: parse_t_response,
+    },
+    Lane {
+        name: "googleapis/t/at",
+        build: &|agent, q| t(agent, q, GOOGLEAPIS, "at"),
+        parse: parse_t_response,
+    },
+];
+
+pub fn lane(name: &str) -> Option<&'static Lane> {
+    LANES.iter().find(|lane| lane.name == name)
+}
+
+fn single(agent: &ureq::Agent, q: &Query, host: &str, client: &str) -> ureq::Request {
+    browserish(agent.get(&format!("{host}/translate_a/single")))
+        .query("client", client)
+        .query("sl", q.sl)
+        .query("tl", q.tl)
+        .query("dt", "t")
+        .query("dt", "bd")
+        .query("dt", "at")
+        .query("dt", "rm")
+        .query("dt", "qc")
+        .query("q", q.text)
+}
+
+fn t(agent: &ureq::Agent, q: &Query, host: &str, client: &str) -> ureq::Request {
+    browserish(agent.get(&format!("{host}/translate_a/t")))
+        .query("client", client)
+        .query("sl", q.sl)
+        .query("tl", q.tl)
+        .query("q", q.text)
+}
+
+fn browserish(request: ureq::Request) -> ureq::Request {
+    request
+        .set("User-Agent", USER_AGENT)
+        .set("Accept", "*/*")
+        .set("Accept-Language", "en-US,en;q=0.9")
+        .set("Referer", "https://translate.google.com/")
+}
+
+pub struct Google {
+    agent: ureq::Agent,
+}
 
 impl Google {
     pub fn new() -> Self {
-        Google
+        Google {
+            agent: ureq::AgentBuilder::new()
+                .timeout(Duration::from_secs(5))
+                .build(),
+        }
     }
 }
 
 impl Default for Google {
     fn default() -> Self {
-        Google
+        Self::new()
     }
 }
 
@@ -26,33 +115,32 @@ impl Engine for Google {
         "google"
     }
 
-    fn translate(&self, query: Query) -> Result<Translation> {
-        let body = ureq::get(ENDPOINT)
-            .query("client", "dict-chrome-ex")
-            .query("sl", query.sl)
-            .query("tl", query.tl)
-            .query("dt", "t")
-            .query("dt", "bd")
-            .query("dt", "at")
-            .query("dt", "rm")
-            .query("dt", "qc")
-            .query("q", query.text)
-            .set("User-Agent", USER_AGENT)
-            .set("Accept", "*/*")
-            .set("Accept-Language", "en-US,en;q=0.9")
-            .set("Referer", "https://translate.google.com/")
-            .call()
-            .map_err(|error| match error {
-                ureq::Error::Status(429, _) => Error::Network(format!(
-                    "rate limited by Google (HTTP 429): too many requests from this network. \
-Wait a while and try again, or open in a browser: {}",
-                    crate::browser::translate_url(query.sl, query.tl, query.text)
-                )),
-                other => Error::Network(other.to_string()),
-            })?
-            .into_string()
-            .map_err(|e| Error::Network(e.to_string()))?;
-        parse_response(&body)
+    fn translate(&self, query: Query, log: &mut dyn FnMut(&str)) -> Result<Translation> {
+        let attempts = LANES
+            .iter()
+            .map(|lane| {
+                let agent = self.agent.clone();
+                let (sl, tl, text) = (query.sl.to_string(), query.tl.to_string(), query.text.to_string());
+                let attempt = move || {
+                    lane.call(
+                        &agent,
+                        &Query {
+                            sl: &sl,
+                            tl: &tl,
+                            text: &text,
+                        },
+                    )
+                };
+                (lane.name.to_string(), attempt)
+            })
+            .collect();
+        race(attempts, &DEFAULT_POLICY, log).map_err(|error| match error {
+            Error::Network(why) => Error::Network(format!(
+                "{why}; open in a browser: {}",
+                browser::translate_url(query.sl, query.tl, query.text)
+            )),
+            other => other,
+        })
     }
 }
 
@@ -119,6 +207,26 @@ pub fn parse_response(body: &str) -> Result<Translation> {
         correction,
         source_translit,
         target_translit,
+    })
+}
+
+pub fn parse_t_response(body: &str) -> Result<Translation> {
+    let value: Value = serde_json::from_str(body).map_err(|e| Error::Parse(e.to_string()))?;
+    let (primary, detected_source) = match value.get(0) {
+        Some(Value::String(text)) => (text.clone(), None),
+        Some(Value::Array(pair)) => (
+            pair.first().and_then(Value::as_str).unwrap_or_default().to_string(),
+            pair.get(1).and_then(Value::as_str).map(str::to_string),
+        ),
+        _ => (String::new(), None),
+    };
+    if primary.is_empty() {
+        return Err(Error::Parse("no translation in response".to_string()));
+    }
+    Ok(Translation {
+        primary,
+        detected_source,
+        ..Translation::default()
     })
 }
 

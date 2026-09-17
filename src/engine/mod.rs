@@ -1,4 +1,6 @@
+pub mod fallback;
 pub mod google;
+pub mod lane;
 
 use crate::error::Result;
 
@@ -26,7 +28,7 @@ pub struct Query<'a> {
 
 pub trait Engine {
     fn name(&self) -> &'static str;
-    fn translate(&self, query: Query) -> Result<Translation>;
+    fn translate(&self, query: Query, log: &mut dyn FnMut(&str)) -> Result<Translation>;
 }
 
 pub fn default_engine() -> Box<dyn Engine> {
